@@ -1,0 +1,7 @@
+"variable","description_cz","map_type","recommended_classification","color_scheme","midpoint","ols_global_coef","lok_median","lok_min","lok_max","interpretace"
+"pirati_pct","Podíl hlasů Pirátů (% z platných)","choropleth","Quantile, 7 tříd","YlOrRd (sekvenční)",NA,NA,NA,NA,NA,"Průměr obcí 6.77 %; max 24.11 %; silný urban bias (Praha 16.85 %)"
+"resid_ols","Rezidua OLS modelu","choropleth_diverging","Quantile, 7 tříd","RdBu divergentní (červená=podhodnoceno, modrá=nadhodnoceno)",0,NA,NA,NA,NA,"Průměr ~0; shluky pozit./negat. reziduí → zdůvodnění GWR"
+"local_R2","Lokální R² GWR modelu","choropleth","Quantile, 7 tříd","BuPu nebo Greens (sekvenční)",NA,0.1884,0.4055,0.2428,0.838,"Průměr 0.433; silnější vysvětlení v pohraničí a Praze"
+"coef_VZDELANI_VYSOKO","Lok. koef. — podíl VŠ vzdělaných","choropleth_diverging","Jenks, 7 tříd","RdBu divergentní",0,0.1125,0.0891,-0.2063,0.4263,"Silnější efekt VŠ v Praze a větších městech; v části venkova záporný"
+"coef_VZDELANI_STR_BEZ","Lok. koef. — vyučení bez maturity","choropleth_diverging","Jenks, 7 tříd","RdBu divergentní",0,-0.0795,-0.0749,-0.3736,0.1671,"Efekt vyučení negativnější v průmyslových oblastech"
+"coef_PODNIKATELE","Lok. koef. — podnikatelé/OSVČ","choropleth_diverging","Jenks, 7 tříd","RdBu divergentní",0,0.0711,0.0447,-0.177,0.2369,"Efekt podnikatelů variabilní; silnější v turistických oblastech"

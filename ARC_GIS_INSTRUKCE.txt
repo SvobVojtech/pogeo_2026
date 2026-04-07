@@ -1,0 +1,127 @@
+
+ArcGIS Pro — Instrukce pro mapování výsledků GWR
+=================================================
+Soubor: data/processed/pirati_final.gpkg
+Vrstva: gwr_final
+
+--------------------------------------------------
+1. IMPORT DAT
+--------------------------------------------------
+a) Otevřít ArcGIS Pro → nový projekt
+b) Insert → Add Data → Add Data...
+   Navigovat na: data/processed/pirati_final.gpkg
+   Vybrat vrstvu: gwr_final
+c) Data se načtou jako polygon vrstva (CRS: S-JTSK EPSG:5514)
+   — nutno NEMĚNIT projekci, ponechat S-JTSK
+
+--------------------------------------------------
+2. NASTAVENÍ SYMBOLOGIE — OBECNÝ POSTUP
+--------------------------------------------------
+Right-click na vrstvě → Symbology
+  Symbology type: Graduated Colors
+  Field: [viz tabulka níže]
+  Method: [viz tabulka níže]
+  Classes: 7
+  Color scheme: [viz tabulka níže]
+
+--------------------------------------------------
+3. TABULKA SYMBOLIZACE PRO KAŽDOU MAPU
+--------------------------------------------------
+
+MAPA 1: Volební úspěch Pirátů
+  Field:      pirati_pct
+  Method:     Quantile
+  Classes:    7
+  Color:      Yellow to Red (YlOrRd) — sekvenční
+  Midpoint:   ne
+  Poznámka:   Zobrazuje absolutní podíl hlasů; světlá = nízký, tmavá = vysoký
+
+MAPA 2: Rezidua OLS
+  Field:      resid_ols
+  Method:     Quantile
+  Classes:    7
+  Color:      Red-Blue Diverging (divergentní)
+  Midpoint:   0 (ručně nastavit v "Edit Color Scheme")
+  Poznámka:   Červená = model nadhodnotil (Pirátů méně než predikováno)
+              Modrá = model podhodnotil (Pirátů více než predikováno)
+
+MAPA 3: Lokální R² (GWR)
+  Field:      local_R2
+  Method:     Quantile
+  Classes:    7
+  Color:      Blue-Purple (BuPu) nebo Green (Greens) — sekvenční
+  Midpoint:   ne
+  Poznámka:   Tmavá = oblast kde model dobře vysvětluje; světlá = horší vysvětlení
+
+MAPA 4: Lokální koeficient — VŠ vzdělání
+  Field:      coef_VZDELANI_VYSOKO
+  Method:     Natural Breaks (Jenks)
+  Classes:    7
+  Color:      Red-Blue Diverging
+  Midpoint:   0 (přidat ručně: pravý klik na škálu → "Set Midpoint Value" = 0)
+  Glob. OLS:  +0.112
+  Poznámka:   Modrá = silný pozitivní efekt VŠ; červená = záporný
+              V Praze a větších městech očekávejte tmavě modrá
+
+MAPA 5: Lokální koeficient — Vyučení bez maturity
+  Field:      coef_VZDELANI_STR_BEZ
+  Method:     Natural Breaks (Jenks)
+  Classes:    7
+  Color:      Red-Blue Diverging
+  Midpoint:   0
+  Glob. OLS:  -0.079
+  Poznámka:   Červená = silný negativní efekt; modrá = záporný koeficient méně výrazný
+              Průmyslové regiony (severní Čechy, Ostravsko) → očekávejte červenou
+
+MAPA 6: Lokální koeficient — Podnikatelé/OSVČ
+  Field:      coef_PODNIKATELE
+  Method:     Natural Breaks (Jenks)
+  Classes:    7
+  Color:      Red-Blue Diverging
+  Midpoint:   0
+  Glob. OLS:  +0.071
+  Poznámka:   Modrá = oblasti kde podnikatelé silně volí Piráty
+              (turistické oblasti, Praha okolí, Jizerské hory?)
+
+--------------------------------------------------
+4. KARTOGRAFICKÉ ELEMENTY (každý layout)
+--------------------------------------------------
+a) North Arrow:
+   Insert → North Arrow → vybrat typ (North Arrow 1)
+   Umístění: pravý horní roh
+
+b) Scale Bar:
+   Insert → Scale Bar → Metric Scale Bar
+   Nastavit: km, délka ~100–200 km
+   Umístění: levý dolní roh
+
+c) Legenda:
+   Insert → Legend
+   Upravit název = název mapy (viz výše)
+   Doporučeno: zaokrouhlit hodnoty na 2 des. místa
+
+d) Titulek:
+   Insert → Text → napsat název mapy
+   Doporučená velikost: 18–22 pt, bold
+
+e) Zdroje:
+   Insert → Text (small):
+   "Zdroj: ČSÚ — volby PSP 2025, SLDB 2021 | Analýza: R 4.5.2, GWmodel"
+
+--------------------------------------------------
+5. EXPORT
+--------------------------------------------------
+Share → Export Map
+  Format: PNG (300 dpi pro tisk) nebo PDF (pro prezentaci)
+  Resolution: 300 dpi
+  Width: 10 in, Height: 7 in
+
+--------------------------------------------------
+6. LAYOUT DOPORUČENÍ PRO PREZENTACI
+--------------------------------------------------
+Data frame: 16:9 (standardní prezentace)
+Pozadí: bílé (#FFFFFF)
+Fonty: Arial nebo Calibri
+Hranice obcí: velmi tenké (0.1–0.2 pt), světle šedé
+Doporučit: 1 mapa per slide, ne 4 mapy na jednom slidu
+

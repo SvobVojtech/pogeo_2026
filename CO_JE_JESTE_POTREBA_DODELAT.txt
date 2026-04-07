@@ -1,0 +1,67 @@
+
+CO JE JEŠTĚ POTŘEBA UDĚLAT RUČNĚ
+==================================
+Vygenerováno: 2026-04
+Projekt: Analýza volebního úspěchu Pirátů — PSP 2025
+
+KRITICKÉ (bez toho nemáš hotový projekt):
+------------------------------------------
+1. PREZENTACE
+   Vytvoř prezentaci (PPTX / Google Slides):
+   Osnova (10 minut):
+   Slide 1 (0:00): Titulní slide — název, autoři
+   Slide 2 (0:30): Česká pirátská strana — krátce
+     - Ideologie: digitální svobody, transparentnost, přímá demokracie
+     - Cílová skupina: mladí, vzdělaní, urbanizovaní voliči
+     - Krátce: EU, pirátské hnutí
+   Slide 3 (1:30): Volební výsledky v čase
+     - Tabulka: 2013 (2.66%), 2017 (10.79%), 2021 (Pirstan 15.62%,
+       samostatní 4.65%), 2025 (8.97%, 18 mandátů)
+     - Trendy: vzestup, koalice s STAN v 2021, rozchod, obnovení
+   Slide 4 (2:30): Mapa volebního úspěchu 2025
+     - output/maps/01_mapa_pirati_uspech.png
+   Slide 5 (3:30): Data a metodika
+     - Zdroje: ČSÚ volby, SLDB 2021
+     - n = 6 157 obcí
+     - Závislá: pirati_pct; Prediktory: 6 ze SLDB
+   Slide 6 (4:30): OLS model
+     - output/figures/12_ols_forest_plot.png
+     - R² = 18.8 %; všechny prediktory sig.
+   Slide 7 (5:30): Diagnostika OLS
+     - output/figures/11_moran_ols_vs_gwr.png (Moran část)
+     - output/maps/02_mapa_rezidua_ols.png
+     - I = 0.08, p = 0.001 → prostorová nestacionarita
+   Slide 8 (6:30): GWR — nastavení a porovnání
+     - output/tables/05_kernel_comparison.csv → jako tabulka na slide
+     - Exponential, BW=23, AICc=28601
+   Slide 9 (7:30): GWR — výsledky
+     - output/figures/10_ols_vs_gwr_srovnani.png
+     - output/maps/03_mapa_local_R2.png
+   Slide 10 (8:30): Lokální koeficienty (3 mapy)
+     - output/maps/04_coef_VZDELANI_VYSOKO.png
+     - output/maps/05_coef_VZDELANI_STR_BEZ.png
+     - output/maps/06_coef_PODNIKATELE.png
+     - + output/figures/09_boxplot_gwr_vs_ols.png
+   Slide 11 (9:30): Závěr
+     - Shrnutí výsledků
+     - Limity: ekologický klam, MAUP, malý BW
+
+2. ARCGIS PRO — FINÁLNÍ MAPY
+   Otevřít: data/processed/pirati_final.gpkg
+   Vytvořit 6 map dle ARC_GIS_INSTRUKCE.txt
+   Exportovat jako PNG 300 dpi
+
+NEPOVINNÉ (doporučené pro lepší hodnocení):
+--------------------------------------------
+3. VOLEBNÍ MAPA V KONTEXTU
+   Přidat do mapy volebního úspěchu textové anotace
+   pro Praha, Brno, Ostrava
+
+4. DODATEČNÁ INTERPRETACE MAP
+   Pro každou mapu koeficientu napsat 2-3 věty
+   "V oblasti X je koeficient záporný, protože..."
+
+5. KERNEL COMPARISON TABULKA
+   Upravit output/tables/05_kernel_comparison.csv
+   jako pěknou tabulku na slide (případně screenshot z R)
+
