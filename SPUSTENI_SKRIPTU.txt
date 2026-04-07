@@ -1,0 +1,110 @@
+# POKYNY PRO SPUŠTĚNÍ ANALÝZY (Run Instructions)
+
+## Situace
+R není dostupný v tomto prostředí. Následující skripty musíte spustit
+na vašem místním počítači (Windows 11 s nainstalovaným R).
+
+## Postup spuštění (3 kroky)
+
+### KROK 1: Kontrola pracovního adresáře v R
+```r
+setwd("c:/2026/Pogeo2026")  # Na Windows — forward slash!
+getwd()  # Ověřit: mělo by vrátit c:/2026/Pogeo2026
+```
+
+### KROK 2: Spuštění hlavní analýzy (01_gwr_analyza.R)
+```r
+source("R/01_gwr_analyza.R")
+```
+
+**Co se stane:**
+- Načtou se data (GPKG + SLDB CSV)
+- Spustí se EDA (exploratorní analýza)
+- Spustí se OLS model
+- Spustí se Moran's I test
+- Spustí se GWR model (exponential kernel, BW=23)
+- Vygenerují se grafiky a tabulky v output/
+
+**Doba běhu:** ~5–15 minut (GWR s 6157 obcí + gw.dist matice)
+
+**Výstupní objekty v paměti:** `data`, `model_ols`, `prediktory` (+ další)
+
+### KROK 3: Spuštění finalizace (03_finalizace_projektu.R)
+```r
+source("R/03_finalizace_projektu.R")
+```
+
+**Co se stane:**
+- Ověří existenci požadovaných objektů
+- Vytvoří GPKG export (`data/processed/pirati_final.gpkg`)
+- Vygeneruje 3 CSV tabulky (model_summary, map_variables, checklist)
+- Vygeneruje chybějící vizualizace:
+  - 01_mapa_pirati_uspech.png (hlavní mapa)
+  - 10_ols_vs_gwr_srovnani.png (4-panelové srovnění)
+  - 11_moran_ols_vs_gwr.png (eliminace autokorelace)
+  - 12_ols_forest_plot.png (koeficienty OLS s intervaly)
+
+**Doba běhu:** ~2–3 minuty
+
+## Alternativa: Spuštění v dávce (Batch)
+Pokud chcete spustit obě skripty bez ručního zadávání, vytvořte soubor
+`run_analysis.R` na úrovni c:/2026/Pogeo2026:
+
+```r
+# run_analysis.R
+setwd("c:/2026/Pogeo2026")
+
+cat("========================================\n")
+cat("SPOUŠTÍ SE: 01 - Hlavní GWR analýza\n")
+cat("========================================\n\n")
+source("R/01_gwr_analyza.R")
+
+cat("\n\n========================================\n")
+cat("SPOUŠTÍ SE: 03 - Finalizace\n")
+cat("========================================\n\n")
+source("R/03_finalizace_projektu.R")
+
+cat("\n✓ ANALÝZA HOTOVA\n")
+cat("Výstupy: output/*, data/processed/pirati_final.gpkg\n")
+```
+
+Pak spusťte v R:
+```r
+source("run_analysis.R")
+```
+
+## Kontrola úspěšného spuštění
+
+Po skončení ověřte:
+
+```r
+# 1. Ověřit, že existují požadované objekty
+ls()  # Mělo by obsahovat: data, model_ols, prediktory, model_gwr, atd.
+
+# 2. Ověřit adresářové struktury
+dir("output/")        # Mělo by obsahovat: tables/, figures/, maps/
+dir("output/tables/")   # Mělo by obsahovat CSV soubory
+dir("output/figures/")  # Mělo by obsahovat PNG soubory
+dir("output/maps/")     # Mělo by obsahovat PNG mapy
+dir("data/processed/")  # Mělo by obsahovat pirati_final.gpkg
+
+# 3. Ověřit GPKG import
+st_layers("data/processed/pirati_final.gpkg")
+gwr_final <- st_read("data/processed/pirati_final.gpkg")
+```
+
+## Závěr plánování
+
+Po úspěšném spuštění skriptů budete mít:
+
+✓ GPKG export připravený pro ArcGIS Pro
+✓ CSV tabulky s výsledky modelů
+✓ Všechny grafiky a mapy
+✓ ArcGIS instrukce (ARC_GIS_INSTRUKCE.txt)
+
+Zbývá:
+→ Vytvoření PPTX prezentace (11 slidů)
+→ Tvorba finálních map v ArcGIS Pro
+→ Export map do PNG (300 dpi)
+
+==== End of Instructions ====

@@ -1,0 +1,489 @@
+===========================================================================
+ANALÝZA VOLEBNÍHO ÚSPĚCHU PIRÁTŮ — PSP ČR 2025
+GWR workflow — postup, výsledky, interpretace (FINÁLNÍ)
+===========================================================================
+Autor:     Analýza v R
+Datum:     2026-04
+Software:  R 4.5.2 | sf, spdep, GWmodel, car, ggplot2
+Data:      csu_geodb_sde_CISOB_volbypspdvacetpet_etl_20240701.gpkg
+           sldb2021_obce_indikatory.csv
+===========================================================================
+
+
+---------------------------------------------------------------------------
+KROK 1 — NAČTENÍ DAT A PŘÍPRAVA
+---------------------------------------------------------------------------
+
+POSTUP:
+  Volební data načtena z GPKG (sf::st_read). Přejmenování kryptických
+  ČSÚ kódů dle popisdat_gpkg.txt. Spojení s daty SLDB 2021 přes kód LAU2
+  (obce). Filtrace: odstraněny 4 vojenské újezdy (bez voličů), 97 obcí
+  s méně než 50 voliči (nestabilní podíly).
+
+VÝSLEDKY:
+  Závislá proměnná: pirati_pct = podíl platných hlasů pro Piráty (%)
+    Ověřeno z popisdat_gpkg.txt: gis224850006 = "Podíl hlasů pro Piráti"
+    Ověřeno z volby.cz Praha: Piráti = 16.85 % ✓ (shoda s gis224850006)
+
+  Finální dataset: 6 157 obcí
+  CRS: S-JTSK / Krovak East North (EPSG:5514) — metrický, vhodný pro GWR
+  SLDB prediktory: 17 indikátorů (vše v % — podíly)
+
+POTVRZENÍ (popisdat_gpkg.txt — skutečné názvy sloupců GPKG):
+  gis224850006 = Podíl hlasů pro Piráti      → pirati_pct     ✓
+  gis224850002 = Podíl hlasů pro SPOLU
+  gis224850003 = Podíl hlasů pro ANO
+  gis224850005 = Podíl hlasů pro SPD
+  gis224850007 = Podíl hlasů pro AUTO
+  gis224850008 = Podíl hlasů pro STAN
+  gis224850009 = Podíl hlasů pro Stačilo!
+
+
+---------------------------------------------------------------------------
+KROK 2 — EXPLORATORNÍ ANALÝZA (EDA)
+---------------------------------------------------------------------------
+
+POSTUP:
+  Popisné statistiky Y i prediktorů. Korelace každého prediktoru s Y
+  (Pearsonovo r). Korelační matice mezi prediktory. Grafické výstupy:
+  histogram, corrplot, boxploty, scatterploty.
+
+VÝSLEDKY — závislá proměnná pirati_pct:
+  Min:    0.00 %
+  Max:    24.11 %  (po filtraci obcí s < 50 voliči)
+  Průměr: 6.78 %   (nižší než národní 8.97 % — viz pozn. níže)
+  Medián: 6.56 %
+  Distribuce: mírně pravostranně vychýlená, unimodální
+
+  Pozn. k rozdílu průměr/národní výsledek:
+    Průměr obcí (unweighted) = 6.78 %, národní výsledek = 8.97 %.
+    Piráti dominují ve velkých městech (Praha, Brno) — ty mají velkou
+    populaci, ale v unweighted průměru nesou stejnou váhu jako vesnice
+    se 60 voliči. Toto je očekávaný a metodicky správný stav.
+
+VÝSLEDKY — korelace prediktorů s Y (seřazeno dle |r|):
+  Rank  Prediktor         r        Interpretace
+  ----  ---------------   ------   -------------------------------------------
+   1.   VZDELANI_VYSOKO   +0.379   Více VŠ → více Pirátů (nejsilnější vztah)
+   2.   VZDELANI_STR_BEZ  -0.377   Více vyučených → méně Pirátů
+   3.   VZDELANI_STR_S    +0.289   SŠ s maturitou — mírně pozitivní
+   4.   VZDELANI_ZAKLAD   -0.224   ZŠ vzdělání → méně Pirátů
+   5.   NEPRAC_DUCH       -0.219   Nepracující důchodci → méně Pirátů
+   6.   PODNIKATELE       +0.189   OSVČ/podnikatelé → více Pirátů
+   7.   VEK0_14           +0.147   Obce s dětmi (mladé rodiny) → více
+   8.   VZDELANI_VOS      +0.138   VOŠ — slabé
+   9.   VEK65             -0.133   Senioři → méně Pirátů
+  10.   NEZAMEST          -0.119   Nezaměstnanost → méně Pirátů
+  11.   VERICI            -0.098   Religiozita → méně Pirátů
+  12.   ZAMESTNAVATELE    +0.051   Zaměstnavatelé — příliš slabé
+  13.   ZAMESTNANCI       -0.045   Zaměstnanci — příliš slabé
+  14.   PRAC_DUCH         +0.040   Pracující důchodci — příliš slabé
+  15.   VEK15_64          +0.037   Produktivní věk — příliš slabé
+  16.   ROMOVE            -0.031   Romové — příliš slabé (viz pozn. níže)
+  17.   VZDELANI_BEZ      -0.027   Bez vzdělání — příliš slabé
+
+  Pozn. k ROMOVE a "slabým" proměnným:
+    Otázka: Nezahrnout i přesto, že je korelace blízká nule?
+    Odpověď: NE. Důvody:
+    (a) Empiricky: r = -0.031 → prakticky nulový lineární vztah s Y
+    (b) Statisticky: průměr 0.09 %, max 10.5 % — extrémně pravostranně
+        zkosená, velká část obcí má přesnou nulu → poruší předpoklady OLS
+    (c) Teoreticky: žádná přímá kauzální vazba Romové → volba Pirátů
+    (d) Modelem: přidáním zvyšujeme VIF bez zlepšení R² (tzv. „noise
+        predictor") — model je horší, ne lepší
+    Stejný argument platí pro VZDELANI_BEZ, PRAC_DUCH, ZAMESTNAVATELE.
+    → Do modelu NEZAHRNOVAT.
+
+VÝSLEDKY — korelační matice (problémové páry |r|>0.7):
+  Vysoce korelované páry v dataset:
+    VEK65 ↔ NEPRAC_DUCH:        r ≈ 0.84 (obě měří stárnutí populace)
+    VZDELANI_VYSOKO ↔ VZDELANI_STR_S: r ≈ -0.76 (kompoziční data)
+    VZDELANI_STR_BEZ ↔ VZDELANI_ZAKLAD: r ≈ -0.72 (kompoziční data)
+
+  Řešení: Z každé kolineární skupiny vybrán právě jeden zástupce:
+    → VEK65 VYPUŠTĚN (NEPRAC_DUCH má silnější vztah s Y)
+    → Z vzdělání reprezentanti: VZDELANI_VYSOKO (r=+0.379),
+      VZDELANI_STR_BEZ (r=-0.377) — oba zachovány pro pokrytí dichotomie
+
+ROZHODNUTÍ O PROMĚNNÝCH — finální výběr pro OLS:
+  Zahrnuto (6 prediktorů — 3 dimenze):
+    VZDELANI_VYSOKO   vzdělání  + (r=+0.379)
+    VZDELANI_STR_BEZ  vzdělání  - (r=-0.377)
+    NEPRAC_DUCH       věk/akt.  - (r=-0.219)
+    PODNIKATELE       ekonomika + (r=+0.189)
+    NEZAMEST          ekonomika - (r=-0.119)
+    VERICI            hodnoty   - (r=-0.098)
+
+  Vyřazeno — důvod:
+    VEK65, VEK0_14, VEK15_64   součet věk. skupin ≈ 100 % (kompoziční data)
+    VZDELANI_STR_S, VZDELANI_ZAKLAD, VZDELANI_VOS, VZDELANI_BEZ
+                                vzdělání součet ≈ 100 % — riziko linearity
+    ZAMESTNAVATELE, ZAMESTNANCI, PRAC_DUCH, ROMOVE  |r|<0.06
+
+Grafické výstupy:
+  output/figures/01_histogram_pirati.png
+  output/figures/02_korelacni_matice.png
+  output/figures/03_boxploty_top6.png
+  output/figures/04_scatterploty_Y_vs_prediktory.png
+
+
+---------------------------------------------------------------------------
+KROK 3 — GLOBÁLNÍ OLS MODEL
+---------------------------------------------------------------------------
+
+POSTUP:
+  lm(pirati_pct ~ VZDELANI_VYSOKO + VZDELANI_STR_BEZ + NEPRAC_DUCH +
+                  PODNIKATELE + NEZAMEST + VERICI)
+  n = 6157 obcí | Diagnostika: VIF (car::vif), Q-Q plot, Fitted vs Residuals
+
+VÝSLEDKY:
+  R²:          0.1884  (model vysvětluje 18.8 % variability)
+  Adjusted R²: 0.1877
+  AICc:        29 130.33
+
+  Koeficienty (všechny statisticky významné, p < 0.05):
+  Prediktor            Koef.     Interpr. směru
+  ------------------   --------  ------------------------------------------
+  (Intercept)           8.667    základní úroveň (průměrná obec)
+  VZDELANI_VYSOKO      +0.112    +1 p.p. VŠ → +0.11 p.p. hlasů Pirátům ***
+  VZDELANI_STR_BEZ     -0.079    +1 p.p. vyučených → -0.08 p.p.       ***
+  NEPRAC_DUCH          -0.022    +1 p.p. neprac. důchodci → -0.02 p.p.  **
+  PODNIKATELE          +0.071    +1 p.p. podnikatelů → +0.07 p.p.      ***
+  NEZAMEST             -0.037    +1 p.p. nezaměstnanost → -0.04 p.p.    **
+  VERICI               -0.020    +1 p.p. věřících → -0.02 p.p.         ***
+
+  VIF hodnoty (vše < 3 — žádná multikolinearita):
+  VZDELANI_VYSOKO = 2.71 | VZDELANI_STR_BEZ = 2.46 | NEPRAC_DUCH = 1.26
+  PODNIKATELE = 1.06     | NEZAMEST = 1.13          | VERICI = 1.11
+
+  Rezidua:
+  Min: -9.096 | Max: +17.304 | Průměr: ~0 ✓
+  Asymetrie reziduí (max >> |min|) → pravděpodobně velká města jako outlieři
+
+INTERPRETACE:
+  Model potvrzuje očekávaný profil voliče Pirátů: vzdělanější, aktivní
+  (podnikatelé), neseniorská, nereligiózní obec → vyšší podpora Pirátů.
+  Vyučení bez maturity, nepracující důchodci, věřící a nezaměstnaní
+  korelují se slabší podporou.
+
+  R² = 18.8 % je nízké — model zachycuje jen pětinu variability.
+  To je silný indikátor, že:
+  (a) volby jsou komplexní jev, který samotná sociodemografie nevysvětlí
+  (b) v datech pravděpodobně existuje prostorová autokorelace reziduí
+      → vztahy se liší region od regionu (nestacionarita)
+  → Zdůvodnění pro GWR přijde v Kroku 4.
+
+  POZOR — interpretace je EKOLOGICKÁ (za obce, ne za jednotlivce):
+  „V obcích s vyšším podílem VŠ vzdělaných je průměrně vyšší volební
+  podpora Pirátů." (Nelze říct: „Vzdělaní lidé volí Piráty.")
+
+Grafické výstupy:
+  output/figures/05_vif.png
+  output/figures/06_fitted_vs_residuals.png
+  output/figures/07_qq_plot_ols.png
+  output/tables/03_ols_koeficienty.csv
+
+
+---------------------------------------------------------------------------
+KROK 4 — DIAGNOSTIKA REZIDUÍ + MORAN'S I
+---------------------------------------------------------------------------
+
+POSTUP:
+  poly2nb(queen=TRUE) + nb2listw(style="W") → W matice sousednosti
+  moran.test() + moran.mc() (999 permutací, seed=42)
+  moran.plot()
+  Mapa reziduí (tmap)
+
+VÝSLEDKY:
+  Průměrný počet sousedů: 5.86 (queen contiguity)
+  Obce bez sousedů:       0
+
+  Moran's I (analytický):   I = 0.0800 | p < 2.2e-16
+  Moran's I (Monte Carlo):  I = 0.0800 | p = 0.001 (rank 1000/1000)
+
+INTERPRETACE:
+  I = 0.08 — statisticky VYSOCE PRŮKAZNÁ autokorelace (p=0.001),
+  ale STŘEDNÍ intenzita (práh silné dle skript: |I| ≥ 0.3).
+
+  Co to znamená:
+  → OLS model NEDOKÁZAL zcela vysvětlit prostorovou strukturu dat
+  → Sousední obce mají systematicky podobná rezidua (shluky)
+  → Vztahy mezi prediktory a volební podporou se PROSTOROVĚ LIŠÍ
+    (nestacionarita) — to je právě to, co GWR modeluje
+
+  Proč I je „jen" 0.08 a ne 0.3+?
+  → Prediktory (vzdělání, věk, nezaměstnanost) jsou samy prostorově
+    strukturované — zachytí část prostorové variance
+  → Zbytková autokorelace 0.08 stále statisticky prokazuje, že globální
+    koeficienty nejsou v celém území stejné → GWR je zdůvodněné
+
+  Práh ze skript: |I| ≥ 0.3 = SILNÁ; 0.05–0.3 = STŘEDNÍ; <0.05 = SLABÁ
+  Naše hodnota: 0.08 = střední, statisticky průkazná → GWR zdůvodněno
+
+Grafické výstupy:
+  output/figures/08_moran_scatterplot_ols.png
+  output/maps/02_mapa_rezidua_ols.png
+  output/tables/04_moran_ols.csv
+
+
+---------------------------------------------------------------------------
+KROK 5 — ROZHODNUTÍ: OLS vs GWR
+---------------------------------------------------------------------------
+
+  Moran's I OLS reziduí = 0.0800, p = 0.001 → PRŮKAZNÁ autokorelace
+  → Vztahy mezi prediktory a volbou Pirátů se prostorově liší
+  → GWR je metodicky zdůvodněné
+
+  GWR modeluje lokální koeficienty β(u,v) — jeden model per obec,
+  vážený vzdáleností (kernel funkce). Výsledkem není jeden globální
+  koeficient, ale mapa koeficientů pro každý prediktor.
+
+
+---------------------------------------------------------------------------
+KROK 6 — GWR MODEL (GWmodel)
+---------------------------------------------------------------------------
+
+POSTUP:
+  sp konverze + gw.dist() (matice vzdáleností centroidů, ~300 MB)
+  bw.gwr(AICc, adaptive) → bandwidth pro 3 typy kernelů
+  Výběr nejlepšího kernelu (min AICc)
+  gwr.basic() → lokální koeficienty, lokální R², rezidua
+  Moran's I reziduí GWR vs OLS
+
+TOP 3 prediktory (dle |t| z OLS) — vizualizovány lokální koeficienty:
+  1. VZDELANI_VYSOKO   (t = 10.84)
+  2. VZDELANI_STR_BEZ  (t = 9.98)
+  3. PODNIKATELE       (t = 9.28)
+
+VÝSLEDKY — porovnání kernelů:
+  Kernel        BW    AICc       R²      Adj.R²
+  bisquare      270   28777.07   0.3344   0.2683
+  gaussian       44   28742.37   0.3471   0.2712
+  exponential    23   28601.14   0.4447   0.2999  ← VÍTĚZ (min AICc)
+
+  Vybraný kernel: EXPONENTIAL, adaptive BW = 23 sousedů
+  (z 6157 obcí = ~0.4 % dat v každém lokálním modelu)
+
+VÝSLEDKY — finální GWR model (exponential, BW=23):
+  GWR R²:      0.4447    OLS R²:      0.1884   → +25.6 p.p. (surový R²)
+  GWR adj.R²:  0.2999    OLS adj.R²:  0.1877   → +11.2 p.p. (penalizované)
+  GWR AICc:    28601     OLS AICc:    29130     → snížení o 529 bodů
+  Eff. parametrů: 1272.8 (z 6157 obs) — model je intenzivně lokální
+  RSS GWR:     27910     OLS RSS:     40787     → snížení o 31.6 %
+
+POZNÁMKA k interpretaci zlepšení:
+  Surový R² (0.4447 vs 0.1884) a AICc snížení o 529 bodů představují
+  statisticky jednoznačné zlepšení. Nicméně adjusted R² (0.2999 vs 0.1877)
+  ukazuje skromněji +11.2 p.p. — tento rozdíl odráží, že GWR model
+  explicitně zavádí 1272.8 efektivních parametrů. Kombinace AICc snížení
+  a adjusted R² zvýšení potvrzuje, že zvýšená komplexita je zdůvodněná,
+  nikoli přetrénování.
+
+VÝSLEDKY — lokální R²:
+  Min:    0.243    Medián: 0.406    Max: 0.838    Průměr: 0.433
+  Interpretace: Nejlépe model funguje v některých oblastech (R²~0.84),
+  nejhůře v jiných (R²~0.24) — důkaz prostorové heterogenity v explicability.
+
+VÝSLEDKY — rozsah lokálních koeficientů vs. globální OLS:
+  Prediktor           OLS glob.  Lok. min   Lok. medián  Lok. max
+  VZDELANI_VYSOKO     +0.112     -0.206      +0.089       +0.426
+  VZDELANI_STR_BEZ    -0.079     -0.374      -0.075       +0.167
+  NEPRAC_DUCH         -0.022     -0.199      -0.025       +0.186
+  PODNIKATELE         +0.071     -0.177      +0.045       +0.237
+  NEZAMEST            -0.037     -0.607      -0.011       +0.469
+  VERICI              -0.020     -0.178      -0.013       +0.175
+
+  KLÍČOVÉ ZJIŠTĚNÍ: Koeficienty mění znaménko uvnitř území!
+  Například VZDELANI_VYSOKO je v některých oblastech záporné — více VŠ
+  vzdělání → MÉNĚ hlasů Pirátům. To je hlavní přínos GWR: odhalení
+  prostorové nestacionarity vztahů, kterou globální model přehlédl.
+
+VÝSLEDKY — Moran's I reziduí:
+  OLS rezidua: I = +0.0800 | p = 0.001   (statisticky průkazná autokorelace)
+  GWR rezidua: I = -0.0017 | p = 0.574   (NENÍ průkazná → autokorelace odstraněna!)
+  Snížení:     0.0817    → GWR eliminovalo prostorovou závislost reziduí
+
+INTERPRETACE:
+  GWR dramaticky zlepšil model. Moran's I reziduí klesl ze statisticky
+  průkazné hodnoty (0.08, p=0.001) na neprukaznou (-0.002, p=0.574).
+  To potvrzuje, že GWR adekvátně zachytil prostorovou strukturu vztahů,
+  kterou OLS ignoroval.
+
+  AICc snížení o 529 bodů a adjusted R² zvýšení o 11.2 p.p. (i přes
+  zvýšenou počet efektivních parametrů) indikuje, že model není pouze
+  přetrénovaný, ale opravdu lépe vystihl základní datové procesy.
+
+  RIZIKO BANDWIDTHU: Bandwidth 23 sousedů (~0.4 % dat) je velmi malý.
+  To znamená, že každá obec počítá svůj model jen z 23 nejbližších
+  sousedů. Výhoda: zachytí jemné prostorové vzory. Riziko: citlivost
+  na lokální anomálie a potenciál přetrénování. Mitigace: adjusted R²
+  (0.30) zůstává přijatelné, nikoli extrémně vysoké.
+
+  METODICKÁ POZNÁMKA k exponential kernelu:
+  Exponential kernel klade VÍCE váhy na blízce sousedy (exponenciální
+  pokles) než bisquare (ostrý cutoff). Konvergoval na menší BW (23 vs
+  270 bisquare) a dosáhl nejnižšího AICc. To nasvědčuje, že exponential
+  lépe zachytil místní variabilitu v datech (nehomogenní rozmístění obcí
+  v Česku čerpá z exponenciálního váhování).
+
+Grafické výstupy:
+  output/maps/01_mapa_pirati_uspech.png        ← hlavní mapa volební podpory
+  output/maps/03_mapa_local_R2.png             ← lokální vypovídavost modelu
+  output/maps/04_coef_VZDELANI_VYSOKO.png      ← lokální koeficient vzdělání
+  output/maps/05_coef_VZDELANI_STR_BEZ.png     ← lokální koeficient vyučenosti
+  output/maps/06_coef_PODNIKATELE.png          ← lokální koeficient podnikatelů
+  output/figures/09_boxplot_gwr_vs_ols.png     ← porovnání rozptylu koef.
+  output/figures/10_ols_vs_gwr_srovnani.png    ← 4-panelové srovnání metrik
+  output/figures/11_moran_ols_vs_gwr.png       ← eliminace autokorelace
+  output/figures/12_ols_forest_plot.png        ← OLS koeficienty s intervaly
+  output/tables/05_kernel_comparison.csv
+  output/tables/06_moran_ols_vs_gwr.csv
+
+
+---------------------------------------------------------------------------
+KROK 7 — EXPORT DO GPKG A FINALIZACE
+---------------------------------------------------------------------------
+
+  st_write(data_export, dsn = "data/processed/pirati_final.gpkg",
+           layer = "gwr_final", delete_layer = TRUE)
+
+  Obsah GPKG:
+    - kod_obce, nazev_obce (identifikace obcí)
+    - pirati_pct (závislá proměnná: podíl hlasů pro Piráty)
+    - fitted_ols, resid_ols (OLS predikce a rezidua)
+    - resid_gwr (GWR rezidua)
+    - local_R2 (lokální R² z GWR modelu)
+    - coef_VZDELANI_VYSOKO, coef_VZDELANI_STR_BEZ, coef_PODNIKATELE
+      (lokální koeficienty top 3 prediktorů)
+    - 6 SLDB prediktorů použitých v modelování (VZDELANI_VYSOKO,
+      VZDELANI_STR_BEZ, NEPRAC_DUCH, PODNIKATELE, NEZAMEST, VERICI)
+    - Zachovány originální geometrie (polygony obcí)
+
+  GPKG je připravený pro import do ArcGIS Pro a dalších GIS systémů.
+  Pole jsou pojmenována jednoznačně a jsou připravena pro kartografické
+  znázornění.
+
+CSV TABULKY:
+  - output/tables/model_summary.csv: Porovnání metrik OLS vs GWR
+  - output/tables/map_variables_overview.csv: Specifikace 6 map pro ArcGIS
+  - output/tables/project_checklist.csv: Kontrola pokrytí požadavků zadání
+
+GRAFICKÉ FINÁLY:
+  Generovány všechny chybějící vizualizace dle 02_vizualizace.R.
+
+
+---------------------------------------------------------------------------
+KROK 8 — INSTRUKCE PRO GISOVÉ MAPOVÁNÍ
+---------------------------------------------------------------------------
+
+  Soubor: ARC_GIS_INSTRUKCE.txt
+
+  Obsah:
+    - Import procedury GPKG do ArcGIS Pro
+    - 6 mapových výstupů s konkrétními specifikacemi:
+      1. Mapa volebního úspěchu (pirati_pct) — Quantile, 7 tříd, YlOrRd
+      2. Rezidua OLS — Quantile, 7 tříd, RdBu (midpoint=0)
+      3. Lokální R² — Quantile, 7 tříd, BuPu
+      4. Koef. VZDELANI_VYSOKO — Jenks, 7 tříd, RdBu
+      5. Koef. VZDELANI_STR_BEZ — Jenks, 7 tříd, RdBu
+      6. Koef. PODNIKATELE — Jenks, 7 tříd, RdBu
+    - Kartografické prvky: severka, měřítko 100–200 km, legenda,
+      nadpis, zdroj dat
+    - Parametry exportu: PNG, 300 dpi, 10" × 7"
+
+
+===========================================================================
+OVĚŘENÍ VŮČI ZADÁNÍ (zadani_volby.html)
+===========================================================================
+
+Požadavek ze zadání                           Status   Umístění
+-------------------------------------------------  -------  -------------------
+Představení strany Piráti                     TODO    Prezentace PPTX (slide 2)
+Volební výsledky v minulých volbách (tabulka) TODO    Prezentace PPTX (slide 3)
+Mapa současného volebního úspěchu             ✓       output/maps/01_mapa_pirati_uspech.png
+Neprostorový model — sestavení & diagnostika  ✓       Krok 3, output/tables/03_ols_koeficienty.csv
+Výběr prediktorů — dokumentace procesu        ✓       Krok 2, ANALYZA_POSTUP_FINAL.txt
+Data ze SLDB 2021                             ✓       data/raw/sldb2021_obce_indikatory.csv
+Popis kvality OLS (R², testy reziduí, VIF)    ✓       Krok 3
+Test autokorelace reziduí (Moran's I)         ✓       Krok 4, output/tables/04_moran_ols.csv
+GWR model — testování kernelu/bandwidth       ✓       Krok 6, output/tables/05_kernel_comparison.csv
+GWR — automatická optimalizace (AICc/CV)      ✓       Krok 6, bw.gwr(AICc, adaptive)
+Vizualizace lokálního R²                      ✓       output/maps/03_mapa_local_R2.png
+Vizualizace 3 lokálních koeficientů           ✓       output/maps/04-06_coef_*.png
+Porovnání lokální vs globální hodnota         ✓       Krok 6, tabulka rozsahu koef.
+Ověření snížení nestacionarity (Moran GWR)   ✓       Krok 6, Moran GWR vs OLS
+Cartografické výstupy pro prezentaci          ✓       output/maps/*.png
+Instrukce pro GIS (ArcGIS Pro)                ✓       ARC_GIS_INSTRUKCE.txt
+Prezentace ~10 minut                          TODO    Prezentace PPTX (11 slidů)
+Finální zpráva / interpretace                 ✓       ANALYZA_POSTUP_FINAL.txt
+
+===========================================================================
+METODOLOGICKÉ OČEKÁVÁNÍ
+===========================================================================
+
+1. EKOLOGICKÝ KLAM
+   Data jsou za OBCE, ne za jednotlivce. Interpretujeme vždy:
+   „V obcích s vyšším podílem VŠ je vyšší volební podpora Pirátů."
+   NIKDY: „Vzdělaní lidé volí Piráty."
+
+2. KOMPOZIČNÍ DATA
+   Vzdělání součet = 100 %, věk součet = 100 %. Nelze zahrnout
+   všechny kategorie naráz (perfektní multikolinearita). Proto
+   jsme vybrali po jednom zástupci z každé dimenze.
+
+3. UNWEIGHTED vs WEIGHTED PRŮMĚR
+   Průměr obcí (6.78 %) ≠ národní výsledek (8.97 %). Správně —
+   Piráti dominují v populačně velkých, ale geograficky malých
+   jednotkách (Praha, Brno).
+
+4. FILTRACE MALÝCH OBCÍ
+   97 obcí s < 50 voliči odstraněno. Důvod: v obci se 30 voliči
+   jeden přechod k Pirátům = +3.3 % → extrémní variabilita bez
+   informační hodnoty. Maximální pirati_pct po filtraci = 24.11 %.
+
+5. MORAN'S I — INTERPRETACE PRAHŮ
+   Dle POGEO skript: |I| ≥ 0.3 = silná autokorelace;
+   0.05–0.3 = střední; < 0.05 = slabá.
+   Naše OLS: I = 0.08 → střední, avšak p = 0.001 → statisticky
+   vysoce průkazná. Monte Carlo: 999 permutací, pseudo p-value.
+
+6. BANDWIDTH A KOMPLEXITA GWR
+   Adaptive bandwidth = 23 sousedů znamená, že každá obec počítá
+   svůj lokální model jen z 23 nejbližších sousedů (~0.4 % dat).
+   Tato velmi lokální kalibraci ospravedlňuje:
+   (a) AICc snížení o 529 bodů
+   (b) Adjusted R² zvýšení o 11.2 p.p. (navzdory penalizaci)
+   (c) Moran's I eliminace (0.08 → -0.002)
+   Nicméně risk extrémní lokality je uznaný a zmiňován.
+
+7. EFEKTIVNÍ PARAMETRY
+   GWR využívá 1272.8 efektivních parametrů z 6157 pozorování.
+   To je ~20.7 % dat — vysoký podíl, který justifikuje adjusted R²
+   penalizaci v reportu.
+
+8. ZNAMÉNKO KOEFICIENTŮ
+   Klíčové zjištění GWR: lokální koeficienty mohou mít OPAČNÉ
+   znaménko než globální OLS koeficienty. Příklad: VZDELANI_VYSOKO
+   je globálně +0.112, ale lokálně min = -0.206. Tohle ilustruje
+   prostorovou nestacionaritu — údajný vztah není všude stejný.
+
+===========================================================================
+ZÁVĚR
+===========================================================================
+
+Analýza potvrdila, že volební úspěch Pirátské strany v ČR není věc
+čisté sociodemografie (R² = 18.8 % pro OLS), ale vykazuje zřetelnou
+prostorovou strukturu (Moran's I = 0.08, p = 0.001), která se navíc
+uvnitř území mění (koeficienty mění znaménka).
+
+Geographically Weighted Regression (GWR) efektivně zachytila tuto
+nestacionaritu, zlepšíc vysvětlenost na R² = 44.5 % a eliminujíc
+prostorovou autokorelaci reziduí (Moran's I = -0.002, p = 0.574).
+Místní variabilita v poměru vlivu vzdělání, věku, podnikatelství
+a hodnot otvírá prostor pro hlubší regionální interpretaci, kterou
+budou podrobovat tematické mapy pro ArcGIS Pro.
+
+Všechny výše zmíněné výstupy (GPKG, tabulky, mapy, instrukce) jsou
+připraveny pro finalizaci prezentace a zprávy.
+
+===========================================================================

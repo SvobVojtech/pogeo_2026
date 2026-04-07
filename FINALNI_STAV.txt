@@ -1,0 +1,351 @@
+===========================================================================
+POGEO 2026 — PROJEKT ANALÝZA PIRÁTŮ
+FINÁLNÍ STAV PROJEKTU A INSTRUKCE K DOKONČENÍ
+===========================================================================
+Datum:   duben 2026
+Status:  Analýza hotova | Vizuály připraveny | Čeká na spuštění + prezentaci
+===========================================================================
+
+## CO JE HOTOVO? ✓
+
+### A) ANALÝZA & METODIKA
+✓ Kompletní GWR workflow (script 01_gwr_analyza.R, 837 řádků)
+✓ Exploratorní analýza (EDA) — korelace, VIF, grafiky
+✓ Globální OLS model s diagnostikou (R²=0.188, Moran's I=0.08***)
+✓ Test prostorové autokorelace (Moran's I)
+✓ Optimalizace GWR kernelu (exponential vybaven, BW=23)
+✓ GWR finální model (R²=0.445, Moran's I=-0.002 ns)
+
+Výsledky zmrazeny v CSV:
+  output/tables/03_ols_koeficienty.csv           (OLS koef. + p-values)
+  output/tables/04_moran_ols.csv                 (Moran's I OLS)
+  output/tables/05_kernel_comparison.csv         (3 kernely porovnány)
+  output/tables/06_moran_ols_vs_gwr.csv         (Moran's: OLS vs GWR)
+
+### B) DOKUMENTACE
+✓ ANALYZA_POSTUP_FINAL.txt (kompletní final. metodika bez placeholderů)
+✓ ARC_GIS_INSTRUKCE.txt (konkrétní pokyny pro ArcGIS Pro mapování)
+✓ OSNOVA_PREZENTACE.txt (11-slide osnova s texty + obrázky)
+✓ SPUSTENI_SKRIPTU.txt (pokyny pro lokální spuštění)
+✓ Tento soubor (FINALNI_STAV.txt) — souhrnný přehled
+
+### C) R SKRIPTY PŘIPRAVENY K SPUŠTĚNÍ
+✓ 01_gwr_analyza.R (837 řádků) — hlavní analýza
+  ├─ Krok 1–3: EDA + OLS
+  ├─ Krok 4: Moran's I
+  ├─ Krok 5–6: GWR
+  └─ Výstupy: CSV tabulky + grafiky (figures/, maps/)
+
+✓ 03_finalizace_projektu.R (546 řádků) — finalizace
+  ├─ Kontrola objektů
+  ├─ GPKG export (data/processed/pirati_final.gpkg)
+  ├─ 3× CSV shrnutí (07-09_*.csv)
+  └─ Chybějící vizualizace (01_mapa*, 10–12_*)
+
+---
+
+## CO JE TŘEBA UDĚLAT? (3 KROKY)
+
+### KROK 1: Spuštění R skriptů LOKÁLNĚ (váše počítač)
+⏱ Čas: ~15–20 minut (GWR je výpočetně náročná)
+⚙ Místo: Windows 11 s R nainstalovaným
+📍 Cesta: c:/2026/Pogeo2026/
+
+**Postup:**
+```r
+setwd("c:/2026/Pogeo2026")  # Pracovní složka
+
+# 1) Spustit hlavní analýzu
+cat("SPOUŠTÍ SE: analýza Pirátů GWR\n")
+source("R/01_gwr_analyza.R")     # ~ 10 minut
+
+# 2) Spustit finalizaci
+cat("SPOUŠTÍ SE: finalizace + GPKG export\n")
+source("R/03_finalizace_projektu.R")  # ~ 2-3 minuty
+
+cat("\n✓ HOTOVO!\n")
+cat("Kontrola: dir('output/tables/') & dir('data/processed/')\n")
+```
+
+**Výstupy po spuštění:**
+```
+output/tables/
+  ├─ 03_ols_koeficienty.csv          (už existuje)
+  ├─ 04_moran_ols.csv                (už existuje)
+  ├─ 05_kernel_comparison.csv        (už existuje)
+  ├─ 06_moran_ols_vs_gwr.csv        (už existuje)
+  ├─ 07_model_summary.csv            (NOVÝ)
+  ├─ 08_map_variables_overview.csv   (NOVÝ)
+  └─ 09_project_checklist.csv        (NOVÝ)
+
+output/figures/
+  ├─ 01–09 (už existují z prvního běhu)
+  ├─ 10_ols_vs_gwr_srovnani.png      (NOVÝ)
+  ├─ 11_moran_ols_vs_gwr.png         (NOVÝ)
+  └─ 12_ols_forest_plot.png          (NOVÝ)
+
+output/maps/
+  ├─ 02_mapa_rezidua_ols.png         (já existuje)
+  ├─ 01_mapa_pirati_uspech.png       (NOVÝ)
+  ├─ 03_mapa_local_R2.png            (NOVÝ z prvního běhu)
+  ├─ 04_coef_VZDELANI_VYSOKO.png     (NOVÝ z prvního běhu)
+  ├─ 05_coef_VZDELANI_STR_BEZ.png    (NOVÝ z prvního běhu)
+  └─ 06_coef_PODNIKATELE.png         (NOVÝ z prvního běhu)
+
+data/processed/
+  └─ pirati_final.gpkg               (NOVÝ — klíčový!)
+```
+
+---
+
+### KROK 2: Vytvořit PPTX prezentaci (PowerPoint)
+⏱ Čas: ~30–45 minut
+⚙ Software: Microsoft PowerPoint nebo LibreOffice Impress
+📍 Osnova: OSNOVA_PREZENTACE.txt (detailní text pro všech 11 slidů)
+
+**Obsah (11 slidů):**
+1. Titulní strana
+2. O Pirátské straně (ideologie, vznik, cílová skupina)
+3. Volební historie 2013–2025 (tabulka)
+4. Mapa — volební úspěch (vložit: 01_mapa_pirati_uspech.png)
+5. OLS model — koeficienty a kvalita
+6. Diagnostika — Moran's I test prostorové autokorelace
+7. GWR koncept — srovnění OLS vs. GWR tabulka
+8. Lokální koeficienty — vliv VŠ vzdělání (vložit: 04_coef_*.png)
+9. Lokální R² — kde model funguje (vložit: 03_mapa_local_R2.png)
+10. Srovnání 4 metrik OLS vs GWR (vložit: 10_ols_vs_gwr_srovnani.png)
+11. Shrnutí & závěry
+
+**Číslování stran:**
+Slide 1 = titulní (bez čísla)
+Slides 2–11 = číslované 1–10 v dolním rohu
+
+**Trvání:** Cílovaně ~10 minut vysvětlování
+
+---
+
+### KROK 3: Vytvořit finální mapy v ArcGIS Pro
+⏱ Čas: ~30–45 minut (1 mapa = ~5 minut)
+⚙ Software: ArcGIS Pro ≥ 3.1
+📍 Data: data/processed/pirati_final.gpkg (vrstva: gwr_final)
+📍 Instrukce: ARC_GIS_INSTRUKCE.txt (detail. symbologie per mapu)
+
+**6 map k vytvoření:**
+1. pirati_pct — Volební úspěch (Quantile, 7, YlOrRd)
+2. resid_ols — Rezidua OLS (Quantile, 7, RdBu, midpoint=0)
+3. local_R2 — Lokální R² (Quantile, 7, BuPu)
+4. coef_VZDELANI_VYSOKO — Vliv VŠ vzdělání (Jenks, 7, RdBu)
+5. coef_VZDELANI_STR_BEZ — Vliv vyučení (Jenks, 7, RdBu)
+6. coef_PODNIKATELE — Vliv podnikatelů (Jenks, 7, RdBu)
+
+**Na každé mapě:**
+- Severka (compass)
+- Měřítko 100–200 km
+- Legenda se třídami + barvami
+- Nadpis + zdroj (ČSÚ, 6157 obcí)
+
+**Export:**
+- PNG, 300 dpi, velikost 10" × 7"
+- Pojmenování: 01_pirati_pct.png, 02_rezidua_ols.png, atd.
+- Umístění: output/maps/ nebo output/arcgis_maps/
+
+---
+
+## FINÁLNÍ CHECKLIST ZADÁNÍ
+
+| # | Požadavek | Status | Kde |
+|----|-----------|--------|-----|
+| 1 | Představení Pirátů | ✓ HOTOVO | OSNOVA_PREZENTACE.txt (slide 2) |
+| 2 | Volební historie | ✓ HOTOVO | OSNOVA_PREZENTACE.txt (slide 3) |
+| 3 | Mapa volební podpory | ⏳ PO SPUŠTĚNÍ | output/maps/01_mapa_pirati_uspech.png |
+| 4 | OLS model | ✓ HOTOVO | Krok 1: 01_gwr_analyza.R |
+| 5 | Výběr prediktorů | ✓ HOTOVO | ANALYZA_POSTUP_FINAL.txt (Krok 2) |
+| 6 | SLDB data | ✓ HOTOVO | sldb2021_obce_indikatory.csv (6 pred.) |
+| 7 | Kvalita OLS | ✓ HOTOVO | output/tables/03_ols_koeficienty.csv |
+| 8 | Moran's I test | ✓ HOTOVO | output/tables/04_moran_ols.csv |
+| 9 | GWR model | ✓ HOTOVO | output/tables/05_kernel_comparison.csv |
+|10 | Testování kernelu | ✓ HOTOVO | output/tables/05_kernel_comparison.csv |
+|11 | Vizualizace local R² | ⏳ PO SPUŠTĚNÍ | output/maps/03_mapa_local_R2.png |
+|12 | Vizualizace 3 koef. | ⏳ PO SPUŠTĚNÍ | output/maps/04-06_coef_*.png |
+|13 | Srovnání lokální/glob. | ⏳ PO SPUŠTĚNÍ | output/tables/07_model_summary.csv |
+|14 | Ověření snížení nest. | ✓ HOTOVO | output/tables/06_moran_ols_vs_gwr.csv |
+|15 | GPKG export | ⏳ PO SPUŠTĚNÍ | data/processed/pirati_final.gpkg |
+|16 | Prezentace | 🟡 OSNOVA | OSNOVA_PREZENTACE.txt — chybí PPTX |
+|17 | ArcGIS instrukce | ✓ HOTOVO | ARC_GIS_INSTRUKCE.txt |
+|18 | Finální mapy ArcGIS | 🟡 ČEKÁNÍ | Po PPTX; 6 map |
+
+---
+
+## SHRNUTÍ KLÍČOVÝCH ČÍSEL
+
+### OLS Model:
+```
+R² = 0.1884       (18.84 % variability)
+Adj.R² = 0.1877
+AICc = 29130.33
+Moran's I reziduí = 0.0800 (p = 0.001) ***
+Všechny prediktory: p < 0.05
+VIF max = 2.71 (bez multikolinearity)
+n = 6157 obcí
+```
+
+### GWR Model (exponential, BW=23):
+```
+R² = 0.4447       (44.47 % variability)
+Adj.R² = 0.2999   (adjusted za 1272.8 eff. parametry)
+AICc = 28601.14   (snížení o 529 bodů)
+Moran's I reziduí = -0.0017 (p = 0.574) ns
+Lokální R²: min=0.243, medián=0.406, max=0.838
+Bandwidth = 23 sousedů (= 0.37 % dat)
+```
+
+### Porovnání OLS/GWR:
+```
+R²:            +25.6 p.p.           (0.188 → 0.445)
+Adj.R²:        +11.2 p.p.           (0.188 → 0.300)
+AICc:          -529 bodů            (lepší tak či onak)
+Moran's I:     Eliminováno ✓        (0.080 → -0.002)
+Interpretace:  GWR je významně lepší model
+```
+
+---
+
+## SOUBORY V PROJEKTU (SOUHRN)
+
+### Data:
+```
+data/raw/
+├─ csu_geodb_sde_CISOB_volbypspdvacetpet_etl_20240701.gpkg
+├─ sldb2021_obce_indikatory.csv
+└─ popisdat_gpkg.txt
+```
+
+### Skripty R:
+```
+R/
+├─ 01_gwr_analyza.R          (837 řádků — hlavní analýza)
+├─ 02_vizualizace.R          (zkelet — použito v 03_finalizace)
+└─ 03_finalizace_projektu.R  (546 řádků — finalizace + GPKG)
+```
+
+### Výstupy (generující se po spuštění):
+```
+output/
+├─ tables/
+│  ├─ 03_ols_koeficienty.csv          (OLS koef.)
+│  ├─ 04_moran_ols.csv                (Moran's I OLS)
+│  ├─ 05_kernel_comparison.csv        (kernely)
+│  ├─ 06_moran_ols_vs_gwr.csv        (Moran's OLS vs GWR)
+│  ├─ 07_model_summary.csv            (NOVÝ)
+│  ├─ 08_map_variables_overview.csv   (NOVÝ)
+│  └─ 09_project_checklist.csv        (NOVÝ)
+├─ figures/
+│  ├─ 01_histogram_pirati.png
+│  ├─ 02_korelacni_matice.png
+│  ├─ ...
+│  ├─ 10_ols_vs_gwr_srovnani.png      (NOVÝ)
+│  ├─ 11_moran_ols_vs_gwr.png         (NOVÝ)
+│  └─ 12_ols_forest_plot.png          (NOVÝ)
+└─ maps/
+   ├─ 01_mapa_pirati_uspech.png       (NOVÝ)
+   ├─ 02_mapa_rezidua_ols.png
+   ├─ 03_mapa_local_R2.png            (NOVÝ)
+   ├─ 04_coef_VZDELANI_VYSOKO.png     (NOVÝ)
+   ├─ 05_coef_VZDELANI_STR_BEZ.png    (NOVÝ)
+   └─ 06_coef_PODNIKATELE.png         (NOVÝ)
+```
+
+### GPKG (po spuštění):
+```
+data/processed/
+└─ pirati_final.gpkg
+   └─ vrstva: gwr_final
+      ├─ kod_obce, nazev_obce
+      ├─ pirati_pct
+      ├─ fitted_ols, resid_ols, resid_gwr
+      ├─ local_R2
+      ├─ coef_VZDELANI_VYSOKO, _STR_BEZ, _PODNIKATELE
+      ├─ VZDELANI_VYSOKO, _STR_BEZ, NEPRAC_DUCH, PODNIKATELE, NEZAMEST, VERICI
+      └─ geometry (polygony obcí)
+```
+
+### Dokumentace:
+```
+ANALYZA_POSTUP_FINAL.txt      (Kompletní metodika — bez placeholderů!)
+ARC_GIS_INSTRUKCE.txt          (Symbologie + pokyny pro 6 map)
+OSNOVA_PREZENTACE.txt          (11-slide osnova s detaily)
+SPUSTENI_SKRIPTU.txt           (Pokyny k lokálnímu spuštění)
+CO_JE_JESTE_POTREBA_DODELAT.txt (TODO list — zbývá: PPTX + ArcGIS mapy)
+FINALNI_STAV.txt               (Tento soubor!)
+```
+
+---
+
+## ČASOVÝ ODHAD END-TO-END
+
+```
+Aktivita                        Čas   Vykonavatel
+──────────────────────────────  ────  ───────────
+1) Spuštění 01_gwr_analyza.R   ~10m  Local (R)
+2) Spuštění 03_finalizace.R    ~3m   Local (R)
+3) Tvorba PPTX (11 slidů)       ~45m  Vy (PowerPoint)
+4) ArcGIS — import GPKG         ~3m   ArcGIS
+5) ArcGIS — 6 map + symbologie  ~30m  ArcGIS
+6) Export PNG 300 dpi           ~5m   ArcGIS
+──────────────────────────────  ────  ───────────
+CELKEM                          ~96m  (cca 90 minut)
+```
+
+---
+
+## POZNÁMKY K KVALITĚ
+
+✓ **Analýza metodicky korektní**
+  - Exploratorní analýza: ✓ (korelace, VIF, outlieři)
+  - OLS diagnostika: ✓ (R², rezidua, Moran's I)
+  - GWR optimalizace: ✓ (AICc, 3 kernely)
+  - Interpretace: ✓ (ekologická, bez hazardních tvrzení)
+
+⚠ **Pozor na:**
+  - Bandwidth = 23 = 0.37 % dat → Velmi lokální! Přijatelné, ale zmiňte.
+  - R² surový vs. adjusted: +25.6 p.p. surový, +11.2 p.p. adjusted.
+  - Znaménko flip u koeficientů: Klíčové zjištění o nestacionaritě!
+
+✓ **Data validace:**
+  - Pirati_pct max = 24.11 % (po filtraci < 50 voličů)
+  - Praha: 16.85 % (ověřeno z volby.cz) ✓
+  - n_final = 6157 obcí (4 vol. újezdy + 97 malých obcí vyřazeno)
+
+---
+
+## KONTAKT NA DALŠÍ POMOC
+
+Pokud během spuštění skriptů nastanou problémy:
+
+1. **Chyba syntaxu vs. data**: Zkontrolujte setwd() a existence souborů
+2. **Memory issues**: GWR s 6000+ obcemi potřebuje ~2–4 GB RAM
+3. **Chybějící packages**: install.packages(c("sf", "spdep", "GWmodel", "car", "ggplot2", "tmap", "tidyr"))
+4. **GPKG kódování**: sf by měl zvládat UTF-8 automaticky
+
+Všechny skripty byly napsány s ohledem na Windows 11 + R 4.5.2.
+
+===========================================================================
+DOKONČETE TÍMTO POŘADÍM:
+
+1. Spusťte R-skripty lokálně (01_ pak 03_) ← KRITICKÉ
+2. Vytvořte PPTX dle OSNOVA_PREZENTACE.txt
+3. Import GPKG do ArcGIS Pro + vytvoření 6 map
+4. Export map do PNG
+
+Poté budete mít:
+✓ Kompletní analýzu
+✓ Metodickou dokumentaci
+✓ Prezentaci (11 slidů)
+✓ Kartografické výstupy
+
+===========================================================================
+
+Vše je připraveno. Zbývá věc technická a tvůrčí. Ať se daří!
+
+Generován: duben 2026
+Status: Projekt připraven k finalizaci

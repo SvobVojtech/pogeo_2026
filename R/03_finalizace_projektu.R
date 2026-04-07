@@ -2,14 +2,21 @@
 # 03_finalizace_projektu.R
 # Finální kompletace projektu — Analýza volebního úspěchu Pirátů (PSP 2025)
 # =============================================================================
-# Předpoklad: objekty 'data', 'model_ols', 'prediktory' jsou v paměti
-#             (po spuštění 01_gwr_analyza.R a kroku GWR)
+# PŘEDPOKLAD: objekty 'data', 'model_ols', 'prediktory' jsou v paměti
+#             (po spuštění 01_gwr_analyza.R — celý skript!)
+#
+# SPUŠTĚNÍ: source("R/01_gwr_analyza.R"); source("R/03_finalizace_projektu.R")
 # =============================================================================
 
 library(sf)
 library(ggplot2)
 library(dplyr)
 library(tmap)
+
+cat("\n")
+cat("==============================================================\n")
+cat("FINALIZACE PROJEKTU — Analýza volebního úspěchu Pirátů\n")
+cat("==============================================================\n\n")
 
 # =============================================================================
 # A) KONTROLA EXISTENCE OBJEKTŮ
