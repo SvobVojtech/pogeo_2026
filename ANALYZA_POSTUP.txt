@@ -182,51 +182,95 @@ Grafické výstupy:
 ---------------------------------------------------------------------------
 KROK 4 — DIAGNOSTIKA REZIDUÍ + MORAN'S I
 ---------------------------------------------------------------------------
-[ČEKÁ NA SPUŠTĚNÍ]
 
 POSTUP:
-  poly2nb + nb2listw → W matice (queen adjacency)
-  moran.test() + moran.mc() (999 permutací)
+  poly2nb(queen=TRUE) + nb2listw(style="W") → W matice sousednosti
+  moran.test() + moran.mc() (999 permutací, seed=42)
   moran.plot()
   Mapa reziduí (tmap)
 
 VÝSLEDKY:
-  Moran's I reziduí OLS: [doplnit]
-  p-value (Monte Carlo):  [doplnit]
+  Průměrný počet sousedů: 5.86 (queen contiguity)
+  Obce bez sousedů:       0
 
-  Interpretace: Pokud I > 0 a p < 0.05 → rezidua jsou prostorově
-  autokorelovaná → OLS podcenil prostorovou strukturu dat →
-  GWR je metodicky zdůvodněné.
+  Moran's I (analytický):   I = 0.0800 | p < 2.2e-16
+  Moran's I (Monte Carlo):  I = 0.0800 | p = 0.001 (rank 1000/1000)
 
-  Pravidlo ze skript: |I| ≥ 0.3 = silná autokorelace.
+INTERPRETACE:
+  I = 0.08 — statisticky VYSOCE PRŮKAZNÁ autokorelace (p=0.001),
+  ale STŘEDNÍ intenzita (práh silné dle skript: |I| ≥ 0.3).
+
+  Co to znamená:
+  → OLS model NEDOKÁZAL zcela vysvětlit prostorovou strukturu dat
+  → Sousední obce mají systematicky podobná rezidua (shluky)
+  → Vztahy mezi prediktory a volební podporou se PROSTOROVĚ LIŠÍ
+    (nestacionarita) — to je právě to, co GWR modeluje
+
+  Proč I je "jen" 0.08 a ne 0.3+?
+  → Prediktory (vzdělání, věk, nezaměstnanost) jsou samy prostorově
+    strukturované — zachytí část prostorové variance
+  → Zbytková autokorelace 0.08 stále statisticky prokazuje, že globální
+    koeficienty nejsou v celém území stejné → GWR je zdůvodněné
+
+  Práh ze skript: |I| ≥ 0.3 = SILNÁ; 0.05–0.3 = STŘEDNÍ; <0.05 = SLABÁ
+  Naše hodnota: 0.08 = střední, statisticky průkazná → GWR zdůvodněno
+
+Grafické výstupy:
+  output/figures/08_moran_scatterplot_ols.png
+  output/maps/02_mapa_rezidua_ols.png
+  output/tables/04_moran_ols.csv
 
 
 ---------------------------------------------------------------------------
 KROK 5 — ROZHODNUTÍ: OLS vs GWR
 ---------------------------------------------------------------------------
-[ČEKÁ NA VÝSLEDKY KROKU 4]
 
-  Pokud Moran's I reziduí OLS je statisticky významné → přechod na GWR.
-  GWR umožní: lokální koeficienty β(u,v) per obec — testuje, zda
-  vztahy vzdělání/ekonomiky s volbou Pirátů jsou stabilní nebo se
-  prostorově liší.
+  Moran's I OLS reziduí = 0.0800, p = 0.001 → PRŮKAZNÁ autokorelace
+  → Vztahy mezi prediktory a volbou Pirátů se prostorově liší
+  → GWR je metodicky zdůvodněné
+
+  GWR modeluje lokální koeficienty β(u,v) — jeden model per obec,
+  vážený vzdáleností (kernel funkce). Výsledkem není jeden globální
+  koeficient, ale mapa koeficientů pro každý prediktor.
 
 
 ---------------------------------------------------------------------------
 KROK 6 — GWR MODEL (GWmodel)
 ---------------------------------------------------------------------------
-[ČEKÁ]
+[ČEKÁ NA SPUŠTĚNÍ — doplnit výsledky]
 
 POSTUP:
-  bw.gwr(approach="AICc", kernel="bisquare", adaptive=TRUE)
-  Porovnání: fixed vs adaptive, různé kernel funkce
-  gwr.basic() → lokální koeficienty, lokální R²
-  Moran's I reziduí GWR (porovnání s OLS)
+  Převod na sp (GWmodel vyžaduje Spatial*DataFrame)
+  gw.dist() → matice vzdáleností centroidů
+  bw.gwr(approach="AICc", adaptive=TRUE) → optimální bandwidth
+  Porovnání 3 kernelů: bisquare, gaussian, exponential
+  gwr.basic() → lokální koeficienty, lokální R², rezidua
+  Moran's I reziduí GWR → porovnání s OLS
 
-Výstupy:
-  Lokální R² mapa
-  3 mapy lokálních koeficientů (top 3 prediktory)
-  Tabulka OLS vs GWR: AIC, R², Moran's I reziduí
+TOP 3 prediktory pro vizualizaci lokálních koeficientů
+(dle t-statistiky z OLS):
+  1. VZDELANI_VYSOKO   (t = 10.84)
+  2. VZDELANI_STR_BEZ  (t = 9.98)
+  3. PODNIKATELE       (t = 9.28)
+
+VÝSLEDKY:
+  Kernel (nejlepší):   [doplnit]
+  Bandwidth (adaptive):[doplnit] sousedů
+  GWR R²:              [doplnit]
+  GWR Adj. R²:         [doplnit]
+  GWR AICc:            [doplnit]
+  OLS AIC:             29 130.31
+  Moran's I GWR rezid: [doplnit]
+  Moran's I OLS rezid: 0.0800
+
+Grafické výstupy:
+  output/maps/03_mapa_local_R2.png
+  output/maps/04_coef_VZDELANI_VYSOKO.png
+  output/maps/05_coef_VZDELANI_STR_BEZ.png
+  output/maps/06_coef_PODNIKATELE.png
+  output/figures/09_boxplot_gwr_vs_ols.png
+  output/tables/05_kernel_comparison.csv
+  output/tables/06_moran_ols_vs_gwr.csv
 
 
 ---------------------------------------------------------------------------
@@ -235,7 +279,9 @@ KROK 7 — EXPORT DO GPKG (pro ArcGIS Pro)
 [ČEKÁ]
 
   st_write(data, "data/processed/pirati_gwr_results.gpkg")
-  Obsah: pirati_pct, koeficienty, lokální R², rezidua OLS i GWR
+  Obsah: pirati_pct, OLS rezidua, GWR rezidua,
+         lokální R², lokální koeficienty top 3 prediktorů
+  → Import do ArcGIS Pro pro finální mapové layouty
 
 
 ===========================================================================

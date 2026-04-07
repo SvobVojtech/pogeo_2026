@@ -552,3 +552,270 @@ cat(sprintf("p-value (Monte Carlo):   %.4f\n", moran_mc$p.value))
 cat(sprintf("Počet permutací:         %d\n", moran_mc$parameter))
 cat("Závěr: prostorová autokorelace reziduí →",
     ifelse(moran_mc$p.value < 0.05, "GWR ZDŮVODNĚNO", "GWR méně potřebné"), "\n")
+
+# =============================================================================
+# KROK 5: ROZHODNUTÍ — OLS vs GWR
+# =============================================================================
+# Moran's I reziduí OLS = 0.08, p = 0.001 → statisticky průkazná
+# prostorová autokorelace reziduí → globální koeficienty nejsou v celém
+# území stejné → přechod na GWR je metodicky zdůvodněný.
+cat("\n=== KROK 5: ROZHODNUTÍ ===\n")
+cat("I = 0.0800 (střední intenzita, |I| < 0.3 ze skript = 'silná')\n")
+cat("Ale p = 0.001 → autokorelace statisticky PRŮKAZNÁ.\n")
+cat("Závěr: OLS model je NESTACIONÁRNÍ → GWR umožní lokální koeficienty.\n")
+
+# =============================================================================
+# KROK 6: GWR MODEL (GWmodel)
+# =============================================================================
+# GWR fituje n lokálních OLS modelů (jeden per obec), kde každý pozorování
+# dostane váhu dle vzdálenosti od fokálního bodu (kernel funkce).
+# Výstupem jsou lokální koeficienty β(u,v), lokální R² a rezidua.
+
+library(GWmodel)
+library(sp)
+
+cat("\n=== KROK 6: GWR MODEL ===\n")
+
+# --- 6.1 Převod na sp objekt (GWmodel vyžaduje Spatial*) ----
+data_sp <- as(data, "Spatial")
+coords  <- coordinates(data_sp)
+cat("Převod na sp: OK |", nrow(data_sp), "obcí\n")
+
+# Formule GWR — stejná jako OLS
+# (VIF všechny < 3 → multikolinearita není problém)
+formula_gwr <- formula_ols
+
+# --- 6.2 Předvýpočet matice vzdáleností ----
+# Pro 6157 obcí je to velká matice (~300 MB) — buďme trpěliví
+cat("Počítám matici vzdáleností (může trvat 1–3 minuty)...\n")
+dMat <- gw.dist(dp.locat = coords)
+cat("dMat: OK\n")
+
+# --- 6.3 Výběr bandwidth — porovnání adaptive vs fixed ----
+cat("\n--- 6.3a Bandwidth: ADAPTIVE kernel (bisquare, AICc) ---\n")
+bw_adapt <- bw.gwr(
+  formula  = formula_gwr,
+  data     = data_sp,
+  approach = "AICc",
+  kernel   = "bisquare",
+  adaptive = TRUE,         # počet sousedů (ne vzdálenost)
+  dMat     = dMat
+)
+cat("Optimální bandwidth (adaptive, počet sousedů):", bw_adapt, "\n")
+
+cat("\n--- 6.3b Bandwidth: FIXED kernel (bisquare, AICc) ---\n")
+bw_fixed <- bw.gwr(
+  formula  = formula_gwr,
+  data     = data_sp,
+  approach = "AICc",
+  kernel   = "bisquare",
+  adaptive = FALSE,        # vzdálenost v metrech
+  dMat     = dMat
+)
+cat("Optimální bandwidth (fixed, metry):", round(bw_fixed / 1000, 1), "km\n")
+
+# --- 6.4 Porovnání typů kernelů ----
+cat("\n--- 6.4 Porovnání kernelů (adaptive, AICc) ---\n")
+kernels <- c("bisquare", "gaussian", "exponential")
+kernel_tbl <- data.frame()
+
+for (k in kernels) {
+  cat("  Testuji kernel:", k, "...\n")
+  bw_tmp <- bw.gwr(formula_gwr, data = data_sp, approach = "AICc",
+                    kernel = k, adaptive = TRUE, dMat = dMat)
+  gwr_tmp <- gwr.basic(formula_gwr, data = data_sp, bw = bw_tmp,
+                        kernel = k, adaptive = TRUE, dMat = dMat)
+  kernel_tbl <- rbind(kernel_tbl, data.frame(
+    kernel    = k,
+    bandwidth = bw_tmp,
+    AICc      = round(gwr_tmp$GW.diagnostic$AICc, 2),
+    R2_gwr    = round(gwr_tmp$GW.diagnostic$gw.R2, 4),
+    adjR2_gwr = round(gwr_tmp$GW.diagnostic$gwR2.adj, 4)
+  ))
+}
+cat("\nPorovnání kernelů:\n")
+print(kernel_tbl)
+write.csv(kernel_tbl, "output/tables/05_kernel_comparison.csv", row.names = FALSE)
+
+# Výběr nejlepšího kernelu (nejnižší AICc)
+best_kernel <- kernel_tbl$kernel[which.min(kernel_tbl$AICc)]
+best_bw     <- kernel_tbl$bandwidth[which.min(kernel_tbl$AICc)]
+cat("\nNejlepší kernel (min AICc):", best_kernel,
+    "| bandwidth:", best_bw, "\n")
+
+# --- 6.5 Finální GWR model ----
+cat("\n--- 6.5 Finální GWR model ---\n")
+gwr_model <- gwr.basic(
+  formula  = formula_gwr,
+  data     = data_sp,
+  bw       = best_bw,
+  kernel   = best_kernel,
+  adaptive = TRUE,
+  dMat     = dMat
+)
+cat("\n")
+print(gwr_model)
+
+# --- 6.6 Extrakce výsledků ----
+gwr_res <- as.data.frame(gwr_model$SDF)
+
+data$local_R2        <- gwr_res$Local_R2
+data$resid_gwr       <- gwr_res$residual
+# Lokální koeficienty — top 3 dle t-hodnot z OLS
+# OLS pořadí: VZDELANI_VYSOKO (t=10.8) > VZDELANI_STR_BEZ (t=10.0) > PODNIKATELE (t=9.3)
+data$coef_VZDELANI_VYSOKO  <- gwr_res$VZDELANI_VYSOKO
+data$coef_VZDELANI_STR_BEZ <- gwr_res$VZDELANI_STR_BEZ
+data$coef_PODNIKATELE      <- gwr_res$PODNIKATELE
+
+cat("\n--- Souhrn lokálního R² ---\n")
+cat(sprintf("  Min:    %.4f\n", min(data$local_R2, na.rm = TRUE)))
+cat(sprintf("  Medián: %.4f\n", median(data$local_R2, na.rm = TRUE)))
+cat(sprintf("  Max:    %.4f\n", max(data$local_R2, na.rm = TRUE)))
+cat(sprintf("  Průměr: %.4f\n", mean(data$local_R2, na.rm = TRUE)))
+cat(sprintf("  Globální OLS R²: %.4f\n", r2))
+
+# --- 6.7 Moran's I reziduí GWR (porovnání s OLS) ----
+cat("\n--- Moran's I reziduí GWR ---\n")
+moran_gwr <- moran.mc(data$resid_gwr, lw, nsim = 999, zero.policy = TRUE)
+print(moran_gwr)
+cat(sprintf("OLS rezidua: I = %.4f | p = %.4f\n",
+            moran_mc$statistic, moran_mc$p.value))
+cat(sprintf("GWR rezidua: I = %.4f | p = %.4f\n",
+            moran_gwr$statistic, moran_gwr$p.value))
+cat("Snížení autokorelace:",
+    round(moran_mc$statistic - moran_gwr$statistic, 4), "\n")
+
+# Uložení Moran srovnání
+moran_both <- data.frame(
+  model   = c("OLS", "GWR"),
+  moran_I = round(c(moran_mc$statistic, moran_gwr$statistic), 4),
+  p_value = round(c(moran_mc$p.value, moran_gwr$p.value), 4)
+)
+write.csv(moran_both, "output/tables/06_moran_ols_vs_gwr.csv", row.names = FALSE)
+
+# --- 6.8 Mapy výsledků GWR (tmap v4 syntax) ----
+tmap_mode("plot")
+
+# Mapa lokálního R²
+m_r2 <- tm_shape(data) +
+  tm_polygons(
+    fill        = "local_R2",
+    fill.scale  = tm_scale_intervals(style = "quantile", n = 7,
+                                      values = "brewer.greens"),
+    fill.legend = tm_legend(title = "Lokální R²"),
+    col         = NA,
+    col_alpha   = 0
+  ) +
+  tm_title("GWR — lokální kvalita modelu (R²)")
+tmap_save(m_r2, "output/maps/03_mapa_local_R2.png",
+          width = 10, height = 7, dpi = 300)
+cat("Uloženo: output/maps/03_mapa_local_R2.png\n")
+
+# Mapa koeficientu VZDELANI_VYSOKO
+m_c1 <- tm_shape(data) +
+  tm_polygons(
+    fill        = "coef_VZDELANI_VYSOKO",
+    fill.scale  = tm_scale_intervals(style = "jenks", n = 7, midpoint = 0,
+                                      values = "brewer.rd_bu"),
+    fill.legend = tm_legend(title = "Lok. koef.\nVZDELANI_VYSOKO"),
+    col = NA, col_alpha = 0
+  ) +
+  tm_title("GWR — lokální koeficient: podíl VŠ")
+tmap_save(m_c1, "output/maps/04_coef_VZDELANI_VYSOKO.png",
+          width = 10, height = 7, dpi = 300)
+
+# Mapa koeficientu VZDELANI_STR_BEZ
+m_c2 <- tm_shape(data) +
+  tm_polygons(
+    fill        = "coef_VZDELANI_STR_BEZ",
+    fill.scale  = tm_scale_intervals(style = "jenks", n = 7, midpoint = 0,
+                                      values = "brewer.rd_bu"),
+    fill.legend = tm_legend(title = "Lok. koef.\nVZDELANI_STR_BEZ"),
+    col = NA, col_alpha = 0
+  ) +
+  tm_title("GWR — lokální koeficient: vyučení bez maturity")
+tmap_save(m_c2, "output/maps/05_coef_VZDELANI_STR_BEZ.png",
+          width = 10, height = 7, dpi = 300)
+
+# Mapa koeficientu PODNIKATELE
+m_c3 <- tm_shape(data) +
+  tm_polygons(
+    fill        = "coef_PODNIKATELE",
+    fill.scale  = tm_scale_intervals(style = "jenks", n = 7, midpoint = 0,
+                                      values = "brewer.rd_bu"),
+    fill.legend = tm_legend(title = "Lok. koef.\nPODNIKATELE"),
+    col = NA, col_alpha = 0
+  ) +
+  tm_title("GWR — lokální koeficient: podnikatelé/OSVČ")
+tmap_save(m_c3, "output/maps/06_coef_PODNIKATELE.png",
+          width = 10, height = 7, dpi = 300)
+cat("Uloženy mapy koeficientů (04–06)\n")
+
+# --- 6.9 Boxplot: lokální GWR koeficienty vs globální OLS ----
+ols_coefs <- coef(model_ols)
+top3 <- c("VZDELANI_VYSOKO", "VZDELANI_STR_BEZ", "PODNIKATELE")
+
+box_data <- data.frame()
+for (v in top3) {
+  box_data <- rbind(box_data, data.frame(
+    prediktor = v,
+    hodnota   = data[[paste0("coef_", v)]]
+  ))
+}
+
+ols_lines <- data.frame(
+  prediktor = top3,
+  ols_val   = ols_coefs[top3]
+)
+
+p_box_coef <- ggplot(box_data, aes(x = prediktor, y = hodnota)) +
+  geom_boxplot(fill = "#a6bddb", outlier.size = 0.4, outlier.alpha = 0.3) +
+  geom_point(data = ols_lines, aes(x = prediktor, y = ols_val),
+             color = "red", size = 3, shape = 18) +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "gray40") +
+  labs(
+    title    = "Lokální koeficienty GWR vs. globální OLS (červený diamant)",
+    subtitle = "Šíře boxplotu = prostorová variabilita vztahu",
+    x        = NULL,
+    y        = "Hodnota koeficientu"
+  ) +
+  theme_minimal(base_size = 12)
+ggsave("output/figures/09_boxplot_gwr_vs_ols.png", p_box_coef,
+       width = 8, height = 5, dpi = 300)
+cat("Uloženo: output/figures/09_boxplot_gwr_vs_ols.png\n")
+
+# --- 6.10 Shrnutí Kroku 6 ----
+cat("\n=== SHRNUTÍ KROKU 6 ===\n")
+cat(sprintf("Kernel: %s | Adaptive bandwidth: %d sousedů\n",
+            best_kernel, best_bw))
+cat(sprintf("GWR R²:       %.4f | OLS R²:  %.4f\n",
+            gwr_model$GW.diagnostic$gw.R2, r2))
+cat(sprintf("GWR adj. R²:  %.4f | OLS adj.R²: %.4f\n",
+            gwr_model$GW.diagnostic$gwR2.adj, r2_adj))
+cat(sprintf("GWR AICc:     %.2f  | OLS AIC:  %.2f\n",
+            gwr_model$GW.diagnostic$AICc, AIC(model_ols)))
+cat(sprintf("Moran I GWR:  %.4f  | OLS: %.4f\n",
+            moran_gwr$statistic, moran_mc$statistic))
+
+# =============================================================================
+# KROK 7: EXPORT DO GPKG (pro ArcGIS Pro)
+# =============================================================================
+cat("\n=== KROK 7: EXPORT DO GPKG ===\n")
+
+# Ponechat jen relevantní sloupce
+export_cols <- c("kod_obce", "nazev_obce", "pirati_pct",
+                  "resid_ols", "fitted_ols",
+                  "local_R2", "resid_gwr",
+                  "coef_VZDELANI_VYSOKO", "coef_VZDELANI_STR_BEZ",
+                  "coef_PODNIKATELE",
+                  prediktory)
+
+data_export <- data[, c(export_cols, "geom")]
+
+st_write(data_export,
+         "data/processed/pirati_gwr_results.gpkg",
+         layer        = "gwr_results",
+         delete_layer = TRUE)
+cat("Exportováno: data/processed/pirati_gwr_results.gpkg\n")
+cat("Obsah: volební data + OLS rezidua + GWR koeficienty + lokální R²\n")
+cat("→ Načtěte v ArcGIS Pro pro finální mapové výstupy.\n")
