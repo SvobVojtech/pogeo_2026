@@ -167,3 +167,165 @@ cat("SLDB prediktory (kandidátní):\n")
 sldb_cols <- names(sldb)[-1]  # bez uzemi_kod
 cat(" ", paste(sldb_cols, collapse = ", "), "\n")
 cat("\nPoznámka: SLDB hodnoty jsou v procentech (podíly).\n")
+
+# =============================================================================
+# KROK 2: EXPLORATORNÍ ANALÝZA DAT (EDA)
+# =============================================================================
+# Cíl: poznat rozložení závislé proměnné, korelace mezi prediktory,
+#       identifikovat multikolinearitu a outlieery PŘED modelováním.
+
+library(ggplot2)
+library(corrplot)
+
+# --- 2.1 Popisná statistika závislé proměnné ----
+cat("\n=== KROK 2: EDA ===\n")
+cat("\n--- 2.1 Závislá proměnná: pirati_pct ---\n")
+summary(data$pirati_pct)
+cat("Směrodatná odchylka:", sd(data$pirati_pct), "\n")
+cat("Šikmost (skewness):", moments::skewness(data$pirati_pct), "\n")
+cat("Špičatost (kurtosis):", moments::kurtosis(data$pirati_pct), "\n")
+
+# --- 2.2 Histogram závislé proměnné ----
+p_hist <- ggplot(data, aes(x = pirati_pct)) +
+  geom_histogram(bins = 50, fill = "#2b8cbe", color = "white", linewidth = 0.2) +
+  geom_vline(xintercept = mean(data$pirati_pct), color = "red",
+             linetype = "dashed", linewidth = 0.8) +
+  labs(title = "Rozložení volebního úspěchu Pirátů (PSP 2025)",
+       subtitle = paste0("n = ", nrow(data), " obcí | průměr = ",
+                         round(mean(data$pirati_pct), 2), " %"),
+       x = "Podíl hlasů Pirátů (%)", y = "Počet obcí") +
+  theme_minimal(base_size = 12)
+ggsave("output/figures/01_histogram_pirati.png", p_hist,
+       width = 8, height = 5, dpi = 300)
+cat("Uloženo: output/figures/01_histogram_pirati.png\n")
+
+# --- 2.3 Popisné statistiky všech kandidátních prediktorů ----
+# Definice kandidátních prediktorů ze SLDB
+# (MUZI a ZENY vynecháme — jsou komplementární, součet ~100 %)
+prediktory_kandidatni <- c(
+  "VEK0_14", "VEK15_64", "VEK65",
+  "VZDELANI_BEZ", "VZDELANI_ZAKLAD", "VZDELANI_STR_BEZ",
+  "VZDELANI_STR_S", "VZDELANI_VOS", "VZDELANI_VYSOKO",
+  "ROMOVE", "VERICI",
+  "ZAMESTNANCI", "ZAMESTNAVATELE", "PODNIKATELE",
+  "NEZAMEST", "PRAC_DUCH", "NEPRAC_DUCH"
+)
+
+cat("\n--- 2.3 Popisné statistiky prediktorů ---\n")
+stats_df <- data %>%
+  st_drop_geometry() %>%
+  select(all_of(prediktory_kandidatni)) %>%
+  summarise(across(everything(), list(
+    prumer = ~ round(mean(.x, na.rm = TRUE), 2),
+    median = ~ round(median(.x, na.rm = TRUE), 2),
+    sd     = ~ round(sd(.x, na.rm = TRUE), 2),
+    min    = ~ round(min(.x, na.rm = TRUE), 2),
+    max    = ~ round(max(.x, na.rm = TRUE), 2)
+  ))) %>%
+  tidyr::pivot_longer(everything(),
+                      names_to = c("prediktor", "stat"),
+                      names_sep = "_(?=[^_]+$)") %>%
+  tidyr::pivot_wider(names_from = stat, values_from = value)
+
+print(stats_df, n = 30)
+write.csv(stats_df, "output/tables/01_popisne_statistiky.csv", row.names = FALSE)
+
+# --- 2.4 Korelace prediktorů se závislou proměnnou ----
+cat("\n--- 2.4 Korelace prediktorů s pirati_pct ---\n")
+cor_s_y <- data %>%
+  st_drop_geometry() %>%
+  select(pirati_pct, all_of(prediktory_kandidatni)) %>%
+  cor(use = "complete.obs")
+
+# Výpis korelací s Y, seřazeno podle absolutní hodnoty
+cor_y_vec <- cor_s_y[1, -1]
+cor_y_sorted <- sort(abs(cor_y_vec), decreasing = TRUE)
+cor_y_df <- data.frame(
+  prediktor = names(cor_y_sorted),
+  korelace_s_Y = round(cor_y_vec[names(cor_y_sorted)], 3),
+  abs_korelace = round(cor_y_sorted, 3)
+)
+print(cor_y_df, row.names = FALSE)
+write.csv(cor_y_df, "output/tables/02_korelace_s_Y.csv", row.names = FALSE)
+
+# --- 2.5 Korelační matice mezi prediktory ----
+cat("\n--- 2.5 Korelační matice mezi prediktory ---\n")
+cor_pred <- cor(
+  st_drop_geometry(data)[, prediktory_kandidatni],
+  use = "complete.obs"
+)
+
+# Identifikace silně korelovaných párů (|r| > 0.7)
+cat("Páry s |r| > 0.7:\n")
+high_cor <- which(abs(cor_pred) > 0.7 & upper.tri(cor_pred), arr.ind = TRUE)
+if (nrow(high_cor) > 0) {
+  for (i in seq_len(nrow(high_cor))) {
+    r <- high_cor[i, ]
+    cat(sprintf("  %s <-> %s : r = %.3f\n",
+                prediktory_kandidatni[r[1]],
+                prediktory_kandidatni[r[2]],
+                cor_pred[r[1], r[2]]))
+  }
+} else {
+  cat("  Žádné.\n")
+}
+
+# Vizualizace korelační matice
+png("output/figures/02_korelacni_matice.png", width = 1000, height = 1000, res = 120)
+corrplot(cor_pred, method = "color", type = "lower",
+         addCoef.col = "black", number.cex = 0.55,
+         tl.cex = 0.7, tl.col = "black",
+         col = colorRampPalette(c("#b2182b", "white", "#2166ac"))(200),
+         title = "Korelační matice — kandidátní prediktory",
+         mar = c(0, 0, 2, 0))
+dev.off()
+cat("Uloženo: output/figures/02_korelacni_matice.png\n")
+
+# --- 2.6 Boxploty vybraných prediktorů ----
+# Top 6 prediktorů dle korelace s Y
+top6 <- head(cor_y_df$prediktor, 6)
+
+p_box <- data %>%
+  st_drop_geometry() %>%
+  select(all_of(top6)) %>%
+  tidyr::pivot_longer(everything(), names_to = "prediktor", values_to = "hodnota") %>%
+  ggplot(aes(x = prediktor, y = hodnota)) +
+  geom_boxplot(fill = "#a6bddb", outlier.size = 0.5, outlier.alpha = 0.3) +
+  labs(title = "Boxploty — 6 nejvíce korelovaných prediktorů",
+       x = NULL, y = "Hodnota (%)") +
+  theme_minimal(base_size = 11) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+ggsave("output/figures/03_boxploty_top6.png", p_box, width = 9, height = 5, dpi = 300)
+cat("Uloženo: output/figures/03_boxploty_top6.png\n")
+
+# --- 2.7 Scatterploty: Y vs. top prediktory ----
+p_scatter <- data %>%
+  st_drop_geometry() %>%
+  select(pirati_pct, all_of(top6)) %>%
+  tidyr::pivot_longer(-pirati_pct, names_to = "prediktor", values_to = "hodnota") %>%
+  ggplot(aes(x = hodnota, y = pirati_pct)) +
+  geom_point(alpha = 0.15, size = 0.5, color = "#2b8cbe") +
+  geom_smooth(method = "lm", color = "red", linewidth = 0.7, se = FALSE) +
+  facet_wrap(~prediktor, scales = "free_x", ncol = 3) +
+  labs(title = "Závislá proměnná vs. top prediktory",
+       x = "Prediktor (%)", y = "Piráti (%)") +
+  theme_minimal(base_size = 10)
+ggsave("output/figures/04_scatterploty_Y_vs_prediktory.png", p_scatter,
+       width = 10, height = 7, dpi = 300)
+cat("Uloženo: output/figures/04_scatterploty_Y_vs_prediktory.png\n")
+
+# --- 2.8 Shrnutí EDA ----
+cat("\n=== SHRNUTÍ KROKU 2 ===\n")
+cat("Závislá proměnná: pirati_pct\n")
+cat("  průměr:", round(mean(data$pirati_pct), 2), "%\n")
+cat("  medián:", round(median(data$pirati_pct), 2), "%\n")
+cat("  rozsah:", round(min(data$pirati_pct), 2), "–",
+    round(max(data$pirati_pct), 2), "%\n")
+cat("\nTop 6 prediktorů (dle |r| s Y):\n")
+for (i in 1:6) {
+  cat(sprintf("  %d. %s (r = %.3f)\n", i,
+              cor_y_df$prediktor[i], cor_y_df$korelace_s_Y[i]))
+}
+cat("\nSilně korelované páry prediktorů (|r| > 0.7):",
+    nrow(high_cor), "párů\n")
+cat("Výstupy: output/figures/ a output/tables/\n")
