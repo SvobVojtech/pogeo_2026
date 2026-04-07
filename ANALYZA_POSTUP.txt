@@ -125,38 +125,52 @@ Grafické výstupy:
 ---------------------------------------------------------------------------
 KROK 3 — GLOBÁLNÍ OLS MODEL
 ---------------------------------------------------------------------------
-[ČEKÁ NA SPUŠTĚNÍ — doplnit výsledky]
 
 POSTUP:
   lm(pirati_pct ~ VZDELANI_VYSOKO + VZDELANI_STR_BEZ + NEPRAC_DUCH +
                   PODNIKATELE + NEZAMEST + VERICI)
-  Diagnostika: VIF (car::vif), Q-Q plot, Fitted vs Residuals.
+  n = 6157 obcí | Diagnostika: VIF (car::vif), Q-Q plot, Fitted vs Residuals
 
 VÝSLEDKY:
-  R²:          [doplnit]
-  Adjusted R²: [doplnit]
-  AIC:         [doplnit]
+  R²:          0.1884  (model vysvětluje 18.8 % variability)
+  Adjusted R²: 0.1877
+  AIC:         29 130.31
 
-  Koeficienty:
-  Prediktor            Koef.    p-hodnota
-  ------------------   ------   ---------
-  (Intercept)          [...]    [...]
-  VZDELANI_VYSOKO      [...]    [...]
-  VZDELANI_STR_BEZ     [...]    [...]
-  NEPRAC_DUCH          [...]    [...]
-  PODNIKATELE          [...]    [...]
-  NEZAMEST             [...]    [...]
-  VERICI               [...]    [...]
+  Koeficienty (všechny statisticky významné, p < 0.05):
+  Prediktor            Koef.     Interpr. směru
+  ------------------   --------  ------------------------------------------
+  (Intercept)           8.667    základní úroveň (průměrná obec)
+  VZDELANI_VYSOKO      +0.112    +1 p.p. VŠ → +0.11 p.p. hlasů Pirátům ***
+  VZDELANI_STR_BEZ     -0.079    +1 p.p. vyučených → -0.08 p.p.       ***
+  NEPRAC_DUCH          -0.022    +1 p.p. neprac. důchodci → -0.02 p.p.  **
+  PODNIKATELE          +0.071    +1 p.p. podnikatelů → +0.07 p.p.      ***
+  NEZAMEST             -0.037    +1 p.p. nezaměstnanost → -0.04 p.p.    **
+  VERICI               -0.020    +1 p.p. věřících → -0.02 p.p.         ***
 
-  VIF hodnoty:
-  [doplnit — všechny by měly být < 5]
+  VIF hodnoty (vše < 3 — žádná multikolinearita):
+  VZDELANI_VYSOKO = 2.71 | VZDELANI_STR_BEZ = 2.46 | NEPRAC_DUCH = 1.26
+  PODNIKATELE = 1.06     | NEZAMEST = 1.13          | VERICI = 1.11
 
-INTERPRETACE (vyplnit po spuštění):
-  Model říká: průměrně v celé ČR, při zvýšení podílu VŠ vzdělaných
-  o 1 p.p. vzroste podíl hlasů Pirátů o X p.p. (ceteris paribus).
-  To je GLOBÁLNÍ průměr — platí stejně pro Prahu i pro Ostravsko,
-  pro Šumavu i pro Sudety. Právě tato homogenita bude zpochybněna
-  Moran's I testem reziduí.
+  Rezidua:
+  Min: -9.096 | Max: +17.304 | Průměr: ~0 ✓
+  Asymetrie reziduí (max >> |min|) → pravděpodobně velká města jako outlieři
+
+INTERPRETACE:
+  Model potvrzuje očekávaný profil voliče Pirátů: vzdělanější, aktivní
+  (podnikatelé), neseniorská, nereligiózní obec → vyšší podpora Pirátů.
+  Vyučení bez maturity, nepracující důchodci, věřící a nezaměstnaní
+  korelují se slabší podporou.
+
+  R² = 18.8 % je nízké — model zachycuje jen pětinu variability.
+  To je silný indikátor, že:
+  (a) volby jsou komplexní jev, který samotná sociodemografie nevysvětlí
+  (b) v datech pravděpodobně existuje prostorová autokorelace reziduí
+      → vztahy se liší region od regionu (nestacionarita)
+  → Zdůvodnění pro GWR přijde v Kroku 4.
+
+  POZOR — interpretace je EKOLOGICKÁ (za obce, ne za jednotlivce):
+  "V obcích s vyšším podílem VŠ vzdělaných je průměrně vyšší volební
+  podpora Pirátů." (Nelze říct: "Vzdělaní lidé volí Piráty.")
 
 Grafické výstupy:
   output/figures/05_vif.png
