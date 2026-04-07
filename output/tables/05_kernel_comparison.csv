@@ -1,0 +1,4 @@
+"kernel","bandwidth","AICc","R2_gwr","adjR2_gwr"
+"bisquare",270,28777.07,0.3344,0.2683
+"gaussian",44,28742.37,0.3471,0.2712
+"exponential",23,28601.14,0.4447,0.2999
