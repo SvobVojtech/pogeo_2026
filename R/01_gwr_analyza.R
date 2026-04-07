@@ -810,7 +810,13 @@ export_cols <- c("kod_obce", "nazev_obce", "pirati_pct",
                   "coef_PODNIKATELE",
                   prediktory)
 
-data_export <- data[, c(export_cols, "geom")]
+# sf automaticky přenáší geometrii — stačí vybrat atributové sloupce
+# (není třeba explicitně přidávat geometry sloupec)
+data_export <- data[, export_cols]   # sf zachová geometrii automaticky
+
+# Ověření: obsahuje geometrii?
+cat("Geometry type:", class(st_geometry(data_export)), "\n")
+cat("Počet sloupců:", ncol(data_export), "\n")
 
 st_write(data_export,
          "data/processed/pirati_gwr_results.gpkg",
@@ -819,3 +825,13 @@ st_write(data_export,
 cat("Exportováno: data/processed/pirati_gwr_results.gpkg\n")
 cat("Obsah: volební data + OLS rezidua + GWR koeficienty + lokální R²\n")
 cat("→ Načtěte v ArcGIS Pro pro finální mapové výstupy.\n")
+
+cat("\n=== CELÝ WORKFLOW DOKONČEN ===\n")
+cat("Shrnutí výsledků:\n")
+cat(sprintf("  OLS R² = %.4f  |  GWR R² = %.4f  (+%.1f p.p.)\n",
+            r2, gwr_model$GW.diagnostic$gw.R2,
+            (gwr_model$GW.diagnostic$gw.R2 - r2) * 100))
+cat(sprintf("  OLS AIC = %.1f  |  GWR AICc = %.1f\n",
+            AIC(model_ols), gwr_model$GW.diagnostic$AICc))
+cat(sprintf("  Moran's I: OLS = %.4f → GWR = %.4f (eliminováno)\n",
+            moran_mc$statistic, moran_gwr$statistic))
