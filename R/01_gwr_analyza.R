@@ -329,3 +329,128 @@ for (i in 1:6) {
 cat("\nSilně korelované páry prediktorů (|r| > 0.7):",
     nrow(high_cor), "párů\n")
 cat("Výstupy: output/figures/ a output/tables/\n")
+
+# =============================================================================
+# KROK 3: GLOBÁLNÍ REGRESNÍ MODEL (OLS)
+# =============================================================================
+# Lineární model odhaduje průměrný vztah platný pro celé území ČR naráz.
+# Je to výchozí bod — pokud rezidua budou prostorově autokorelovaná,
+# bude to zdůvodnění pro přechod na GWR.
+
+library(car)      # VIF
+library(ggplot2)
+
+cat("\n=== KROK 3: OLS MODEL ===\n")
+
+# --- 3.1 Definice prediktorů ----
+# Výběr na základě EDA:
+# - pokrývají 3 dimenze: vzdělání, demografii, ekonomiku + hodnoty
+# - vyřazeny: VEK skupiny (suma=100%), vzdělání nadbytečná (suma=100%),
+#             VEK65 (koreluje s NEPRAC_DUCH), vše s |r|<0.06
+prediktory <- c(
+  "VZDELANI_VYSOKO",   # % VŠ vzdělaných          (+)
+  "VZDELANI_STR_BEZ",  # % vyučených bez maturity  (-)
+  "NEPRAC_DUCH",       # % nepracujících důchodců  (-)
+  "PODNIKATELE",       # % OSVČ/podnikatelů        (+)
+  "NEZAMEST",          # % nezaměstnaných          (-)
+  "VERICI"             # % věřících                (-)
+)
+
+# --- 3.2 Sestavení modelu ----
+formula_ols <- as.formula(
+  paste("pirati_pct ~", paste(prediktory, collapse = " + "))
+)
+cat("Formule:", deparse(formula_ols), "\n\n")
+
+model_ols <- lm(formula_ols, data = st_drop_geometry(data))
+
+# --- 3.3 Výsledky modelu ----
+cat("--- Výsledky OLS ---\n")
+print(summary(model_ols))
+
+# Přehledná tabulka koeficientů
+coef_tbl <- as.data.frame(summary(model_ols)$coefficients)
+coef_tbl$prediktor <- rownames(coef_tbl)
+coef_tbl <- coef_tbl[, c("prediktor", "Estimate", "Std. Error", "t value", "Pr(>|t|)")]
+names(coef_tbl) <- c("prediktor", "koeficient", "std_chyba", "t", "p_hodnota")
+coef_tbl[, 2:5] <- round(coef_tbl[, 2:5], 4)
+write.csv(coef_tbl, "output/tables/03_ols_koeficienty.csv", row.names = FALSE)
+cat("\nKoeficienty uloženy: output/tables/03_ols_koeficienty.csv\n")
+
+# --- 3.4 R² a Adjusted R² ----
+r2     <- summary(model_ols)$r.squared
+r2_adj <- summary(model_ols)$adj.r.squared
+cat(sprintf("\nR²:         %.4f  (model vysvětluje %.1f %% variability)\n",
+            r2, r2 * 100))
+cat(sprintf("Adjusted R²: %.4f\n", r2_adj))
+cat(sprintf("AIC:         %.2f\n", AIC(model_ols)))
+
+# --- 3.5 VIF — kontrola multikolinearity ----
+cat("\n--- VIF (Variance Inflation Factor) ---\n")
+vif_vals <- vif(model_ols)
+print(round(vif_vals, 3))
+cat("\nPravidlo: VIF < 5 = OK, 5–10 = pozor, > 10 = problém\n")
+
+# Graficky
+vif_df <- data.frame(
+  prediktor = names(vif_vals),
+  VIF = as.numeric(vif_vals)
+)
+p_vif <- ggplot(vif_df, aes(x = reorder(prediktor, VIF), y = VIF,
+                             fill = VIF > 5)) +
+  geom_col(width = 0.6) +
+  geom_hline(yintercept = 5,  linetype = "dashed", color = "orange", linewidth = 0.8) +
+  geom_hline(yintercept = 10, linetype = "dashed", color = "red",    linewidth = 0.8) +
+  scale_fill_manual(values = c("FALSE" = "#2b8cbe", "TRUE" = "#e34a33"),
+                    guide = "none") +
+  coord_flip() +
+  labs(title = "VIF — multikolinearita prediktorů",
+       subtitle = "Oranžová čára = 5, červená = 10",
+       x = NULL, y = "VIF") +
+  theme_minimal(base_size = 12)
+ggsave("output/figures/05_vif.png", p_vif, width = 7, height = 4, dpi = 300)
+cat("Uloženo: output/figures/05_vif.png\n")
+
+# --- 3.6 Uložení reziduí do datasetu ----
+data$resid_ols    <- residuals(model_ols)
+data$fitted_ols   <- fitted(model_ols)
+
+cat("\n--- Shrnutí reziduí ---\n")
+cat(sprintf("  Min:    %.3f\n", min(data$resid_ols)))
+cat(sprintf("  Max:    %.3f\n", max(data$resid_ols)))
+cat(sprintf("  Průměr: %.6f  (měl by být ~0)\n", mean(data$resid_ols)))
+
+# --- 3.7 Diagnostické grafy reziduí ----
+# Fitted vs. Residuals (kontrola heteroskedasticity)
+p_fvr <- ggplot(data, aes(x = fitted_ols, y = resid_ols)) +
+  geom_point(alpha = 0.2, size = 0.6, color = "#2b8cbe") +
+  geom_hline(yintercept = 0, color = "red", linewidth = 0.8) +
+  geom_smooth(method = "loess", color = "orange", linewidth = 0.7, se = FALSE) +
+  labs(title = "Fitted vs. Residuals",
+       subtitle = "Ideál: rovnoměrně rozptýleno kolem nuly",
+       x = "Fitted hodnoty", y = "Rezidua") +
+  theme_minimal(base_size = 12)
+ggsave("output/figures/06_fitted_vs_residuals.png", p_fvr,
+       width = 7, height = 5, dpi = 300)
+
+# Q-Q plot (normalita reziduí)
+p_qq <- ggplot(data, aes(sample = resid_ols)) +
+  stat_qq(alpha = 0.3, size = 0.5, color = "#2b8cbe") +
+  stat_qq_line(color = "red", linewidth = 0.8) +
+  labs(title = "Q-Q plot reziduí OLS",
+       subtitle = "Ideál: body leží na červené přímce",
+       x = "Teoretické kvantily", y = "Výběrové kvantily") +
+  theme_minimal(base_size = 12)
+ggsave("output/figures/07_qq_plot_ols.png", p_qq,
+       width = 6, height = 6, dpi = 300)
+cat("Uloženy diagnostické grafy (05–07)\n")
+
+# --- 3.8 Shrnutí Kroku 3 ----
+cat("\n=== SHRNUTÍ KROKU 3 ===\n")
+cat(sprintf("Model: pirati_pct ~ %s\n", paste(prediktory, collapse = " + ")))
+cat(sprintf("R² = %.4f | Adj. R² = %.4f | AIC = %.1f\n",
+            r2, r2_adj, AIC(model_ols)))
+cat("Všechny VIF < 5?", all(vif_vals < 5), "\n")
+sig <- coef_tbl$prediktor[coef_tbl$p_hodnota < 0.05 &
+                            coef_tbl$prediktor != "(Intercept)"]
+cat("Statisticky významné prediktory (p<0.05):", paste(sig, collapse = ", "), "\n")
