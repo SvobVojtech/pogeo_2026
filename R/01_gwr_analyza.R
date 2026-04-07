@@ -454,3 +454,101 @@ cat("Všechny VIF < 5?", all(vif_vals < 5), "\n")
 sig <- coef_tbl$prediktor[coef_tbl$p_hodnota < 0.05 &
                             coef_tbl$prediktor != "(Intercept)"]
 cat("Statisticky významné prediktory (p<0.05):", paste(sig, collapse = ", "), "\n")
+
+# =============================================================================
+# KROK 4: DIAGNOSTIKA REZIDUÍ + PROSTOROVÁ AUTOKORELACE (MORAN'S I)
+# =============================================================================
+# OLS předpokládá, že rezidua jsou prostorově nezávislá.
+# Moran's I test ověří, zda jsou rezidua náhodně rozmístěna v prostoru,
+# nebo zda sousední obce mají podobné chyby předpovědi (= autokorelace).
+# Statisticky významný Moran's I → GWR je metodicky zdůvodněné.
+
+library(spdep)
+library(tmap)
+
+cat("\n=== KROK 4: MORAN'S I REZIDUÍ OLS ===\n")
+
+# --- 4.1 Matice prostorové sousednosti ----
+# Queen adjacency: sdílení hrany nebo rohu = soused
+cat("Vytvářím matici sousednosti (queen contiguity)...\n")
+nb <- poly2nb(data, queen = TRUE)
+
+# Kontrola "osamělých" obcí (bez sousedů)
+no_nb <- sum(card(nb) == 0)
+cat("Obce bez sousedů:", no_nb, "\n")
+if (no_nb > 0) {
+  cat("  Exklávní obce bez kontaktu (ostrovy) — neovlivní výsledek.\n")
+}
+
+# Váhová matice (row-standardized: každý soused váha 1/n_sousedů)
+lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
+cat("Průměrný počet sousedů:", mean(card(nb)), "\n")
+
+# --- 4.2 Globální Moran's I test ----
+cat("\n--- Globální Moran's I (analytický test) ---\n")
+moran_test <- moran.test(data$resid_ols, lw, zero.policy = TRUE)
+print(moran_test)
+
+# --- 4.3 Monte Carlo permutační test (robustnější) ----
+# Dle POGEO skript: 999 permutací, pseudo p = (R+1)/(M+1)
+cat("\n--- Moran's I Monte Carlo (999 permutací) ---\n")
+set.seed(42)
+moran_mc <- moran.mc(data$resid_ols, lw, nsim = 999, zero.policy = TRUE)
+print(moran_mc)
+
+cat(sprintf("\nVýsledek: I = %.4f | p-value = %.4f\n",
+            moran_mc$statistic, moran_mc$p.value))
+cat("Práh ze skript: |I| >= 0.3 = silná autokorelace\n")
+if (moran_mc$p.value < 0.05) {
+  cat("ZÁVĚR: Rezidua jsou PROSTOROVĚ AUTOKORELOVANÁ → GWR je zdůvodněné!\n")
+} else {
+  cat("ZÁVĚR: Prostorová autokorelace není statisticky průkazná.\n")
+}
+
+# --- 4.4 Moran scatterplot ----
+png("output/figures/08_moran_scatterplot_ols.png",
+    width = 700, height = 700, res = 120)
+moran.plot(data$resid_ols, lw, zero.policy = TRUE,
+           main = "Moran scatterplot — rezidua OLS",
+           xlab = "Rezidua OLS",
+           ylab = "Prostorově zpožděná rezidua (Wy)",
+           pch = 20, cex = 0.4, col = "#2b8cbe80")
+dev.off()
+cat("Uloženo: output/figures/08_moran_scatterplot_ols.png\n")
+
+# --- 4.5 Mapa reziduí OLS ----
+# Vizuálně ukáže, zda jsou velká rezidua prostorově shlukovaná
+tmap_mode("plot")
+m_resid <- tm_shape(data) +
+  tm_fill("resid_ols",
+          style   = "jenks",
+          n       = 7,
+          midpoint = 0,
+          palette = "RdBu",
+          title   = "Rezidua OLS") +
+  tm_borders(alpha = 0.08) +
+  tm_layout(
+    title          = "Rezidua neprostorového modelu (OLS)",
+    legend.outside = TRUE,
+    frame          = FALSE
+  )
+tmap_save(m_resid, "output/maps/02_mapa_rezidua_ols.png",
+          width = 10, height = 7, dpi = 300)
+cat("Uloženo: output/maps/02_mapa_rezidua_ols.png\n")
+
+# --- 4.6 Uložení výsledků Moran's I ----
+moran_df <- data.frame(
+  test       = c("OLS rezidua"),
+  moran_I    = round(moran_mc$statistic, 4),
+  p_value    = round(moran_mc$p.value, 4),
+  signifikant = moran_mc$p.value < 0.05
+)
+write.csv(moran_df, "output/tables/04_moran_ols.csv", row.names = FALSE)
+
+# --- 4.7 Shrnutí Kroku 4 ----
+cat("\n=== SHRNUTÍ KROKU 4 ===\n")
+cat(sprintf("Moran's I (OLS rezidua): %.4f\n", moran_mc$statistic))
+cat(sprintf("p-value (Monte Carlo):   %.4f\n", moran_mc$p.value))
+cat(sprintf("Počet permutací:         %d\n", moran_mc$parameter))
+cat("Závěr: prostorová autokorelace reziduí →",
+    ifelse(moran_mc$p.value < 0.05, "GWR ZDŮVODNĚNO", "GWR méně potřebné"), "\n")
