@@ -1,0 +1,195 @@
+Layer: csu_geodb.sde.CISOB_volbypspdvacetpet_etl (ID: 220043)
+View In:   ArcGIS Online Map Viewer
+
+Name: csu_geodb.sde.CISOB_volbypspdvacetpet_etl
+
+Display Field: kod
+
+Type: Feature Layer
+
+Geometry Type: esriGeometryPolygon
+
+Description:
+
+Service Item Id: e5d07779d72d4c6c8cd270fbb5ec222f
+
+Copyright Text:
+
+Default Visibility: true
+
+MaxRecordCount: 100000
+
+MaxSelectionCount: 0
+
+Supported Query Formats: JSON, geoJSON, PBF
+
+Min Scale: 0.0
+
+Max Scale: 0.0
+
+Supports Advanced Queries: true
+
+Supports Statistics: true
+
+Can Scale Symbols: false
+
+Use Standardized Queries: true
+
+Supports ValidateSQL: true
+
+Supports Calculate: true
+
+Extent:
+
+    XMin: -904584.2600000016
+    YMin: -1227295.8299999982
+    XMax: -431724.30000000075
+    YMax: -935243.1799999997
+    Spatial Reference: 102067  (5514)  LatestVCSWkid(0)
+
+
+Drawing Info:
+
+    Renderer:
+        Simple Renderer:
+        Symbol:
+            Style: esriSFSSolid
+            Color: [209, 252, 245, 255]
+            Outline:
+                Style: esriSLSSolid
+                Color: [110, 110, 110, 255]
+                Width: 0 Label: N/A
+        Description: N/A Transparency: 0
+    Labeling Info:
+
+Feature Draw Order:
+
+    N/A
+
+Advanced Query Capabilities:
+
+    Supports Statistics: true
+    Supports OrderBy: true
+    Supports Distinct: true
+    Supports Pagination: true
+    Supports TrueCurve: false
+    Supports Returning Query Extent: true
+    Supports Query With Distance: true
+    Supports Sql Expression: true
+    Supports Query With ResultType: true
+    Supports Returning Geometry Centroid: true
+    Supports Binning LOD: true
+    Supports Query With LOD Spatial Reference: true
+    Supports Percentile Statistics: true
+    Supports Having Clause: true
+    Supports Count Distinct: true
+    Supports Time Relation: false
+    Supports Sql Format: false
+    Supports Query Analytic: true
+    Supports Query With Current User: true
+
+
+HasZ: false
+
+HasM: false
+
+Time Info:
+
+    Start Time Field: datum
+    End Time Field: null
+    Track ID Field: null
+    Time Extent:
+        [2025/10/04 00:00:00 UTC, 2025/10/04 00:00:00 UTC] 
+    Time Reference:
+        Time Zone: UTC
+        Respects Daylight Saving: true
+    Time Interval: 1
+    Time Interval Units: esriTimeUnitsUnknown
+    Has Live Data: false
+    Export Options:
+        Use Time: true
+        Time Data Cumulative: false
+        Time Offset: null (null) 
+
+
+Has Attachments: false
+
+HTML Popup Type: esriServerHTMLPopupTypeAsHTMLText
+
+Type ID Field:
+
+Fields:
+
+    objectid ( nullable: false, defaultValue: null, editable: false, length: 4, type: esriFieldTypeOID, modelName: objectid, alias: objectid )
+    kod ( modelName: kod, nullable: true, editable: true, defaultValue: null, length: 64, alias: Kód, type: esriFieldTypeString )
+    nazev ( modelName: nazev, nullable: true, editable: true, defaultValue: null, length: 100, alias: Název, type: esriFieldTypeString )
+    datum ( modelName: datum, nullable: true, editable: true, defaultValue: null, precision: 1, length: 29, alias: Datum, type: esriFieldTypeDate )
+    gis224830002 ( modelName: gis224830002, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů pro SPOLU, type: esriFieldTypeDouble )
+    gis224850005 ( modelName: gis224850005, nullable: true, editable: true, defaultValue: null, alias: Podíl hlasů pro SPD, type: esriFieldTypeDouble )
+    gis224830000 ( modelName: gis224830000, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů celkem, type: esriFieldTypeDouble )
+    gis224950001 ( modelName: gis224950001, nullable: true, editable: true, defaultValue: null, alias: Počet voličů v seznamu, type: esriFieldTypeDouble )
+    gis224850002 ( modelName: gis224850002, nullable: true, editable: true, defaultValue: null, alias: Podíl hlasů pro SPOLU, type: esriFieldTypeDouble )
+    gis224850003 ( modelName: gis224850003, nullable: true, editable: true, defaultValue: null, alias: Podíl hlasů pro ANO, type: esriFieldTypeDouble )
+    gis224830003 ( modelName: gis224830003, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů pro ANO, type: esriFieldTypeDouble )
+    gis224830005 ( modelName: gis224830005, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů pro SPD, type: esriFieldTypeDouble )
+    gis224970001 ( modelName: gis224970001, nullable: true, editable: true, defaultValue: null, alias: Volební účast, type: esriFieldTypeDouble )
+    gis224960001 ( modelName: gis224960001, nullable: true, editable: true, defaultValue: null, alias: Počet hlasujících voličů, type: esriFieldTypeDouble )
+    gis224850006 ( modelName: gis224850006, nullable: true, editable: true, defaultValue: null, alias: Podíl hlasů pro "Piráti", type: esriFieldTypeDouble )
+    gis224830009 ( modelName: gis224830009, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů pro Stačilo!, type: esriFieldTypeDouble )
+    gis224830006 ( modelName: gis224830006, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů pro "Piráti", type: esriFieldTypeDouble )
+    gis224850007 ( modelName: gis224850007, nullable: true, editable: true, defaultValue: null, alias: Podíl hlasů pro AUTO, type: esriFieldTypeDouble )
+    gis224850008 ( modelName: gis224850008, nullable: true, editable: true, defaultValue: null, alias: Podíl hlasů pro STAN, type: esriFieldTypeDouble )
+    gis224830007 ( modelName: gis224830007, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů pro AUTO, type: esriFieldTypeDouble )
+    gis224830008 ( modelName: gis224830008, nullable: true, editable: true, defaultValue: null, alias: Počet platných hlasů pro STAN, type: esriFieldTypeDouble )
+    gis224850009 ( modelName: gis224850009, nullable: true, editable: true, defaultValue: null, alias: Podíl hlasů pro Stačilo!, type: esriFieldTypeDouble )
+    SHAPE__Length ( virtual: true, nullable: true, editable: false, defaultValue: null, alias: SHAPE__Length, type: esriFieldTypeDouble )
+    SHAPE__Area ( virtual: true, nullable: true, editable: false, defaultValue: null, alias: SHAPE__Area, type: esriFieldTypeDouble )
+
+Templates:
+
+    Name: csu_geodb.sde.CISOB_volbypspdvacetpet_etl
+    Description:
+    Prototype:
+        datum: null
+        gis224970001: null
+        kod: null
+        nazev: null
+        gis224950001: null
+        gis224830000: null
+        gis224830007: null
+        gis224830006: null
+        gis224850003: null
+        gis224830009: null
+        gis224830008: null
+        gis224850002: null
+        gis224850005: null
+        gis224830003: null
+        gis224830002: null
+        gis224960001: null
+        gis224830005: null
+        gis224850007: null
+        gis224850006: null
+        gis224850009: null
+        gis224850008: null
+    Drawing Tool: esriFeatureEditToolPolygon
+
+
+Capabilities: Query
+
+Sync Can Return Changes: true
+
+Is Data Versioned: false
+
+Supports Rollback On Failure: true
+
+Supports ApplyEdits With Global Ids: false
+
+Supports ApplyEdits By Upload Id: true
+
+Supports Query With Historic Moment: false
+
+Supports Coordinates Quantization: true
+
+Child Resources:
+
+Supported Operations:   Query   Query Attachments   Query Analytic   Query Top Features   Query Bins   Append   Validate SQL   Generate Renderer   Return Updates   Metadata   Update Metadata
