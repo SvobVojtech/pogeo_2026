@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analýza volebního úspěchu Pirátů — PSP ČR 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  /* ─── Reset & Base ─────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #0a0a0a;
+    --text:   #ffffff;
+    --gold:   #F2C700;
+    --dim:    rgba(255,255,255,0.5);
+    --border: rgba(242,199,0,0.25);
+    --card:   #111111;
+    --card2:  #141414;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  /* ─── Typography ────────────────────────────────────────── */
+  .display {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.04em;
+    line-height: 0.95;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+  }
+
+  h2.section-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25em;
+  }
+
+  h2.section-title span { color: var(--gold); }
+
+  .section-lead {
+    font-size: 1.15rem;
+    color: var(--dim);
+    max-width: 680px;
+    margin-bottom: 3rem;
+    font-weight: 300;
+  }
+
+  p { margin-bottom: 1rem; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ─── Layout ────────────────────────────────────────────── */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  section {
+    padding: 7rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* ─── NAV ───────────────────────────────────────────────── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    height: 60px;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 0;
+    list-style: none;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 0 0.9rem;
+    height: 60px;
+    line-height: 60px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color 0.2s;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* ─── HERO ──────────────────────────────────────────────── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    padding: 100px 0 6rem;
+  }
+
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(242,199,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(242,199,0,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  .hero-accent-bar {
+    width: 4px;
+    height: 120px;
+    background: var(--gold);
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 2rem;
+    margin-top: 0.15em;
+    flex-shrink: 0;
+  }
+
+  .hero-content {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+  }
+
+  .hero-text { flex: 1; }
+
+  .hero-kicker {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hero-kicker::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  .hero-title {
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    line-height: 0.92;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+
+  .hero-title .gold { color: var(--gold); }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--dim);
+    max-width: 560px;
+    margin-bottom: 3rem;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .hero-meta-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .hero-meta-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .hero-stats {
+    margin-top: 4rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .hero-stat {
+    padding: 1.75rem 1.5rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .hero-stat:last-child { border-right: none; }
+
+  .hero-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    display: block;
+  }
+
+  .hero-stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-family: 'Space Grotesk', sans-serif;
+    margin-top: 0.4rem;
+    display: block;
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.4;
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  .scroll-cue span {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .scroll-arrow {
+    width: 20px;
+    height: 20px;
+    border-right: 1.5px solid var(--text);
+    border-bottom: 1.5px solid var(--text);
+    transform: rotate(45deg);
+    margin-top: -4px;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ─── SECTION LABELS ────────────────────────────────────── */
+  .section-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  /* ─── TABLES ────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; margin: 2rem 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+  }
+
+  thead tr {
+    border-bottom: 2px solid var(--gold);
+  }
+
+  thead th {
+    padding: 0.9rem 1.2rem;
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    background: rgba(242,199,0,0.06);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: rgba(242,199,0,0.04); }
+
+  tbody td {
+    padding: 0.85rem 1.2rem;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .td-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .pos { color: #6FD98E; }
+  .neg { color: #F27575; }
+  .gold-val { color: var(--gold); font-weight: 600; }
+  .sig { color: var(--gold); font-size: 0.8rem; letter-spacing: 0.05em; }
+  .dim { color: var(--dim); }
+
+  /* ─── CARDS ─────────────────────────────────────────────── */
+  .card-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .card-grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .card-grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card-grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 2px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 0.6rem;
+  }
+
+  .card-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: var(--dim);
+    margin-top: 0.6rem;
+    line-height: 1.4;
+  }
+
+  /* ─── STAT STRIP ────────────────────────────────────────── */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 2.5rem 0;
+  }
+
+  .stat-strip-item {
+    padding: 2rem 1.5rem;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .stat-strip-item:last-child { border-right: none; }
+
+  .stat-strip-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    color: var(--gold);
+    line-height: 1;
+    display: block;
+  }
+
+  .stat-strip-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-family: 'Space Grotesk', sans-serif;
+    margin-top: 0.4rem;
+    display: block;
+  }
+
+  /* ─── IMAGES ────────────────────────────────────────────── */
+  .map-wrap {
+    margin: 2.5rem 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    background: #0e0e0e;
+  }
+
+  .map-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0.95;
+    transition: opacity 0.2s;
+  }
+
+  .map-wrap:hover img { opacity: 1; }
+
+  .map-caption {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.78rem;
+    color: var(--dim);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-family: 'Space Grotesk', sans-serif;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .map-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin: 2.5rem 0;
+  }
+
+  .map-grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .map-grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+  /* ─── COMPARISON BLOCK ──────────────────────────────────── */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2.5rem 0;
+  }
+
+  @media (max-width: 640px) { .comparison { grid-template-columns: 1fr; } }
+
+  .comparison-col {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 2px;
+    padding: 2rem;
+  }
+
+  .comparison-col.winner {
+    border-color: rgba(242,199,0,0.35);
+    background: rgba(242,199,0,0.04);
+  }
+
+  .comparison-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .comparison-col.winner .comparison-label { color: var(--gold); border-color: var(--border); }
+
+  .comparison-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.88rem;
+  }
+
+  .comparison-row:last-child { border-bottom: none; }
+
+  .comparison-key { color: var(--dim); font-family: 'Space Grotesk', sans-serif; }
+  .comparison-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ─── FORMULA BOX ───────────────────────────────────────── */
+  .formula {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 2px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.92rem;
+    line-height: 1.8;
+  }
+
+  /* ─── HIGHLIGHT BOX ─────────────────────────────────────── */
+  .highlight-box {
+    background: rgba(242,199,0,0.07);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 2px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .highlight-box strong { color: var(--gold); }
+
+  /* ─── RANGE VIZ ─────────────────────────────────────────── */
+  .coef-range {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin: 2.5rem 0;
+  }
+
+  .coef-row { }
+
+  .coef-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+  }
+
+  .coef-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .coef-ols {
+    font-size: 0.78rem;
+    color: var(--dim);
+  }
+
+  .range-bar-wrap {
+    position: relative;
+    height: 28px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px;
+    overflow: visible;
+  }
+
+  .range-bar-zero {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(255,255,255,0.3);
+  }
+
+  .range-bar-fill {
+    position: absolute;
+    top: 4px; bottom: 4px;
+    border-radius: 1px;
+    transition: width 1s ease, left 1s ease;
+  }
+
+  .range-bar-fill.positive { background: rgba(111,217,142,0.6); }
+  .range-bar-fill.negative { background: rgba(242,117,117,0.6); }
+  .range-bar-fill.mixed { background: linear-gradient(90deg, rgba(242,117,117,0.6) 0%, rgba(111,217,142,0.6) 100%); }
+
+  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.35rem;
+  }
+
+  .range-label {
+    font-size: 0.72rem;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--dim);
+  }
+
+  /* ─── REVEAL ANIMATIONS ─────────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  .reveal-delay-5 { transition-delay: 0.5s; }
+
+  /* ─── DIVIDER ────────────────────────────────────────────── */
+  .gold-line {
+    width: 48px;
+    height: 2px;
+    background: var(--gold);
+    margin: 1.5rem 0 2rem;
+  }
+
+  /* ─── TWO-COL ────────────────────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; gap: 2rem; } }
+
+  /* ─── FOOTER ────────────────────────────────────────────── */
+  footer {
+    padding: 3rem 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+  }
+
+  .footer-inner {
+    font-size: 0.82rem;
+    color: var(--dim);
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.04em;
+    line-height: 1.8;
+  }
+
+  .footer-inner span { color: var(--gold); }
+
+  /* ─── QUOTE ──────────────────────────────────────────────── */
+  .big-quote {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    color: var(--text);
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    border-left: 4px solid var(--gold);
+    padding-left: 1.5rem;
+    margin: 3rem 0;
+  }
+
+  /* ─── BADGE ──────────────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    padding: 0.2em 0.65em;
+    background: rgba(242,199,0,0.12);
+    border: 1px solid rgba(242,199,0,0.35);
+    border-radius: 1px;
+    font-size: 0.72rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* ─── LIST ───────────────────────────────────────────────── */
+  ul.check-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+  }
+
+  ul.check-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  ul.check-list li::before {
+    content: '→';
+    color: var(--gold);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.05em;
+  }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    section { padding: 5rem 0; }
+  }
+
+  @media (max-width: 600px) {
+    .hero-stats { grid-template-columns: 1fr 1fr; }
+    .container { padding: 0 1.25rem; }
+    .hero-content { flex-direction: column; }
+    .hero-accent-bar { display: none; }
+    section { padding: 4rem 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══════════════════════════════════════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <a href="#hero" class="nav-logo">Piráti 2025 — POGEO</a>
+    <ul class="nav-links">
+      <li><a href="#o-strane">O straně</a></li>
+      <li><a href="#historie">Historie</a></li>
+      <li><a href="#prostorove-rozdily">Prostorové rozdíly</a></li>
+      <li><a href="#data-metodika">Data</a></li>
+      <li><a href="#ols-model">OLS</a></li>
+      <li><a href="#morans-i">Moran's I</a></li>
+      <li><a href="#gwr-model">GWR</a></li>
+      <li><a href="#lokalni-koeficienty">Lok. koeficienty</a></li>
+      <li><a href="#lokalni-r2">Lok. R²</a></li>
+      <li><a href="#shrnuti">Shrnutí</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-accent-bar"></div>
+      <div class="hero-text">
+        <div class="hero-kicker">Prostorová analýza &nbsp;·&nbsp; POGEO 2026 &nbsp;·&nbsp; PSP ČR 2025</div>
+        <h1 class="hero-title display">
+          Analýza<br>
+          volebního<br>
+          úspěchu<br>
+          <span class="gold">Pirátů</span>
+        </h1>
+        <p class="hero-sub">
+          Geographically Weighted Regression na úrovni 6 157 českých obcí —
+          odkrývá prostorovou nestacionaritu vztahů mezi sociodemografií
+          a volební podporou České pirátské strany.
+        </p>
+        <div class="hero-meta">
+          <div class="hero-meta-item">
+            <span class="hero-meta-label">Autoři</span>
+            <span class="hero-meta-value">Vojtěch Svoboda &amp; Petr Mikeska</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="hero-meta-label">Kurz</span>
+            <span class="hero-meta-value">POGEO</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="hero-meta-label">Datum</span>
+            <span class="hero-meta-value">Duben 2026</span>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-num" data-counter="6157" data-suffix="">6157</span>
+            <span class="hero-stat-label">Obcí v analýze</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num" data-counter="8.97" data-suffix="%" data-decimals="2">8.97%</span>
+            <span class="hero-stat-label">Národní výsledek</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num" data-counter="0.445" data-suffix="" data-decimals="3">0.445</span>
+            <span class="hero-stat-label">GWR R²</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num" data-counter="25.6" data-suffix=" p.p." data-decimals="1">+25.6 p.p.</span>
+            <span class="hero-stat-label">Zlepšení R²</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ═══ O STRANĚ ══════════════════════════════════════════════ -->
+<section id="o-strane">
+  <div class="container">
+    <div class="section-label">01 — O straně</div>
+    <h2 class="section-title reveal">Česká <span>pirátská</span> strana</h2>
+    <p class="section-lead reveal reveal-delay-1">Strana digitální éry — transparentnost, participace a otevřená správa věcí veřejných.</p>
+
+    <div class="two-col">
+      <div>
+        <div class="gold-line reveal"></div>
+        <p class="reveal reveal-delay-1">
+          Česká pirátská strana byla <strong>registrována jako právnická osoba v roce 2012</strong>,
+          navazujíc na mezinárodní pirátské hnutí vzniklé v roce 2009.
+          Hlásí se k ideálům digitální svobody, radikální transparentnosti
+          a přímé demokracie.
+        </p>
+        <p class="reveal reveal-delay-2">
+          Cílová voličská základna je tvořena zejména <strong>mladými, vysokoškolsky
+          vzdělanými voliči v metropolitních oblastech</strong> — Praha, Brno a větší
+          univerzitní centra. Tento vzorec bude empiricky potvrzen i naší
+          prostorovou analýzou.
+        </p>
+        <ul class="check-list">
+          <li class="reveal reveal-delay-2">Digitální bezpečnost a ochrana soukromí</li>
+          <li class="reveal reveal-delay-3">Transparentnost veřejné správy a protikorupce</li>
+          <li class="reveal reveal-delay-3">Regulace technologií a otevřená data</li>
+          <li class="reveal reveal-delay-4">Kritika centralismu a zákaz lobování</li>
+          <li class="reveal reveal-delay-4">Občanská participace na rozhodování</li>
+        </ul>
+      </div>
+      <div>
+        <!-- SVG decorative element — Pirate flag motif -->
+        <div class="reveal reveal-delay-2" style="background: var(--card); border: 1px solid var(--border); border-radius: 2px; padding: 2.5rem; text-align: center;">
+          <svg viewBox="0 0 280 220" width="100%" style="max-width:280px; display:block; margin:0 auto;">
+            <!-- Skull stylized -->
+            <ellipse cx="140" cy="95" rx="52" ry="56" fill="none" stroke="#F2C700" stroke-width="2"/>
+            <circle cx="120" cy="88" r="11" fill="#0a0a0a" stroke="#F2C700" stroke-width="1.5"/>
+            <circle cx="160" cy="88" r="11" fill="#0a0a0a" stroke="#F2C700" stroke-width="1.5"/>
+            <circle cx="120" cy="88" r="5" fill="#F2C700"/>
+            <circle cx="160" cy="88" r="5" fill="#F2C700"/>
+            <path d="M 122 112 Q 140 125 158 112" fill="none" stroke="#F2C700" stroke-width="2" stroke-linecap="round"/>
+            <line x1="130" y1="117" x2="130" y2="128" stroke="#F2C700" stroke-width="1.5"/>
+            <line x1="140" y1="119" x2="140" y2="130" stroke="#F2C700" stroke-width="1.5"/>
+            <line x1="150" y1="117" x2="150" y2="128" stroke="#F2C700" stroke-width="1.5"/>
+            <!-- Crossbones -->
+            <line x1="60" y1="170" x2="220" y2="195" stroke="#F2C700" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+            <line x1="220" y1="170" x2="60" y2="195" stroke="#F2C700" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+            <!-- Founding year -->
+            <text x="140" y="40" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="22" fill="#F2C700" letter-spacing="4">ČESKÁ PIRÁTSKÁ</text>
+            <text x="140" y="215" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="11" fill="rgba(255,255,255,0.45)" letter-spacing="2">REGISTROVÁNO 2012</text>
+          </svg>
+          <div style="margin-top:1.5rem;">
+            <div class="badge">Pirátské hnutí</div>
+            &nbsp;
+            <div class="badge">od 2012</div>
+            &nbsp;
+            <div class="badge">Mezinárodní</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ VOLEBNÍ HISTORIE ══════════════════════════════════════ -->
+<section id="historie">
+  <div class="container">
+    <div class="section-label">02 — Volební historie</div>
+    <h2 class="section-title reveal">Vývoj volební <span>podpory</span></h2>
+    <p class="section-lead reveal reveal-delay-1">Parlamentní volby 2013–2025: od okrajové strany k relevantnímu hráči a zpět.</p>
+
+    <div class="table-wrap reveal reveal-delay-2">
+      <table>
+        <thead>
+          <tr>
+            <th>Volby</th>
+            <th>Rok</th>
+            <th style="text-align:right">Výsledek (%)</th>
+            <th>Poznámka</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PSP ČR</td>
+            <td>2013</td>
+            <td class="td-num">2,66 %</td>
+            <td class="dim">Pod volební hranicí — výsledky nepřekročily 5 %</td>
+          </tr>
+          <tr>
+            <td>PSP ČR</td>
+            <td>2017</td>
+            <td class="td-num gold-val">10,79 %</td>
+            <td class="dim">Samostatná kandidatura — historicky nejlepší výsledek</td>
+          </tr>
+          <tr>
+            <td>PSP ČR</td>
+            <td>2021</td>
+            <td class="td-num">≈ 15,6 %</td>
+            <td class="dim">Koalice Piráti + Starostové (STAN) — podíl nelze přesně oddělit</td>
+          </tr>
+          <tr>
+            <td>PSP ČR</td>
+            <td><strong>2025</strong></td>
+            <td class="td-num gold-val"><strong>8,97 %</strong></td>
+            <td class="dim"><strong>Analyzované volby — samostatná kandidatura</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="highlight-box reveal reveal-delay-3">
+      <strong>Metodická poznámka:</strong> Analýza pracuje s volbami 2025, kdy Piráti kandidují jako
+      samostatná strana. Výsledky 2021 jsou součástí koalice se Starosty (STAN)
+      a není možné spolehlivě izolovat pirátský podíl na úrovni obcí.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROSTOROVÉ ROZDÍLY ═══════════════════════════════════ -->
+<section id="prostorove-rozdily">
+  <div class="container">
+    <div class="section-label">03 — Prostorové rozdíly</div>
+    <h2 class="section-title reveal">Kde Piráti <span>uspěli</span>?</h2>
+    <p class="section-lead reveal reveal-delay-1">Silná koncentrace podpory v metropolitních centrech. Průměr obcí (6,78 %) výrazně zaostává za celostátním výsledkem.</p>
+
+    <div class="stat-strip reveal reveal-delay-2">
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="16.85" data-suffix="%" data-decimals="2">16,85 %</span>
+        <span class="stat-strip-label">Praha</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="8.97" data-suffix="%" data-decimals="2">8,97 %</span>
+        <span class="stat-strip-label">Celostátní výsledek</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="6.78" data-suffix="%" data-decimals="2">6,78 %</span>
+        <span class="stat-strip-label">Průměr obcí</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="24.11" data-suffix="%" data-decimals="2">24,11 %</span>
+        <span class="stat-strip-label">Maximum v obci</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="6157" data-suffix="">6 157</span>
+        <span class="stat-strip-label">Obcí celkem</span>
+      </div>
+    </div>
+
+    <div class="highlight-box reveal reveal-delay-3">
+      <strong>Proč průměr obcí (6,78 %) &lt; celostátní výsledek (8,97 %)?</strong><br>
+      Piráti dominují ve velkých městech (Praha, Brno), která mají velkou populaci.
+      V nevážném průměru obcí má Praha stejnou váhu jako vesnice s 60 voliči.
+      Toto je metodicky správný a očekávaný stav — nikoli chyba v datech.
+    </div>
+
+    <div class="map-wrap reveal reveal-delay-3">
+      <img src="../output/maps/01_mapa_pirati_uspech.png" alt="Mapa volebního úspěchu Pirátů v obcích ČR 2025" loading="lazy">
+      <div class="map-caption">
+        <span>Volební úspěch Pirátů — PSP ČR 2025 | n = 6 157 obcí</span>
+        <span>Zdroj: ČSÚ 2025 | Barevná škála: YlOrRd (žlutá → červená)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DATA A METODIKA ════════════════════════════════════════ -->
+<section id="data-metodika">
+  <div class="container">
+    <div class="section-label">04 — Data a metodika</div>
+    <h2 class="section-title reveal">Data <span>&amp;</span> prediktory</h2>
+    <p class="section-lead reveal reveal-delay-1">6 prediktorů ze Sčítání lidu, domů a bytů 2021 (SLDB) — vybraných na základě korelační analýzy a teorií volebního chování.</p>
+
+    <div class="two-col">
+      <div>
+        <h3 class="reveal" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; color: var(--gold);">Datové zdroje</h3>
+        <div class="card reveal reveal-delay-1" style="margin-bottom: 1rem;">
+          <div class="card-title">Volební data</div>
+          <p style="font-size:0.9rem; color:var(--dim); margin:0;">ČSÚ GPKG — volby do PSP ČR 2025.<br>
+          Proměnná: podíl platných hlasů pro Piráty (%).<br>
+          Ověřeno z volby.cz — Praha: 16,85 % ✓</p>
+        </div>
+        <div class="card reveal reveal-delay-2" style="margin-bottom: 1rem;">
+          <div class="card-title">Sociodemografické prediktory</div>
+          <p style="font-size:0.9rem; color:var(--dim); margin:0;">SLDB 2021 — 17 indikátorů na úrovni LAU2.<br>
+          Po korelační analýze a VIF testu zvoleno 6 prediktorů.<br>
+          Všechny proměnné v % — podíly z celkové populace.</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <div class="card-title">Prostorová vrstva</div>
+          <p style="font-size:0.9rem; color:var(--dim); margin:0;">Polygony obcí ČR — S-JTSK / Krovak East North (EPSG:5514).<br>
+          Metrický CRS vhodný pro GWR vzdálenostní výpočty.<br>
+          Filtrace: 4 vojenské újezdy + 97 obcí &lt; 50 voličů odstraněno.</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="reveal" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; color: var(--gold);">Vybrané prediktory</h3>
+        <div class="table-wrap reveal reveal-delay-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Prediktor</th>
+                <th>Popis</th>
+                <th>Směr</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code style="font-family: 'Space Grotesk', sans-serif; font-size:0.82rem; color:var(--gold);">VZDELANI_VYSOKO</code></td>
+                <td class="dim">Podíl VŠ vzdělaných</td>
+                <td class="pos">↑ pozitivní</td>
+              </tr>
+              <tr>
+                <td><code style="font-family: 'Space Grotesk', sans-serif; font-size:0.82rem; color:var(--gold);">VZDELANI_STR_BEZ</code></td>
+                <td class="dim">Podíl vyučených bez maturity</td>
+                <td class="neg">↓ negativní</td>
+              </tr>
+              <tr>
+                <td><code style="font-family: 'Space Grotesk', sans-serif; font-size:0.82rem; color:var(--gold);">NEPRAC_DUCH</code></td>
+                <td class="dim">Podíl nepracujících důchodců</td>
+                <td class="neg">↓ negativní</td>
+              </tr>
+              <tr>
+                <td><code style="font-family: 'Space Grotesk', sans-serif; font-size:0.82rem; color:var(--gold);">PODNIKATELE</code></td>
+                <td class="dim">Podíl podnikatelů / OSVČ</td>
+                <td class="pos">↑ pozitivní</td>
+              </tr>
+              <tr>
+                <td><code style="font-family: 'Space Grotesk', sans-serif; font-size:0.82rem; color:var(--gold);">NEZAMEST</code></td>
+                <td class="dim">Míra nezaměstnanosti</td>
+                <td class="neg">↓ negativní</td>
+              </tr>
+              <tr>
+                <td><code style="font-family: 'Space Grotesk', sans-serif; font-size:0.82rem; color:var(--gold);">VERICI</code></td>
+                <td class="dim">Podíl věřících</td>
+                <td class="neg">↓ negativní</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="formula reveal">
+      <strong style="color:var(--gold);">Model OLS:</strong><br>
+      pirati_pct ~ VZDELANI_VYSOKO + VZDELANI_STR_BEZ + NEPRAC_DUCH
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      + PODNIKATELE + NEZAMEST + VERICI
+    </div>
+  </div>
+</section>
+
+<!-- ═══ OLS MODEL ══════════════════════════════════════════════ -->
+<section id="ols-model">
+  <div class="container">
+    <div class="section-label">05 — OLS Model</div>
+    <h2 class="section-title reveal">Globální <span>OLS</span> regrese</h2>
+    <p class="section-lead reveal reveal-delay-1">Referenční model — každý prediktor má jediný globální koeficient platný pro celé území ČR.</p>
+
+    <div class="two-col">
+      <div>
+        <div class="table-wrap reveal reveal-delay-1">
+          <table>
+            <thead>
+              <tr>
+                <th>Prediktor</th>
+                <th style="text-align:right">Koeficient</th>
+                <th style="text-align:right">Std. chyba</th>
+                <th>p-hodnota</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>(Intercept)</td>
+                <td class="td-num">8,667</td>
+                <td class="td-num dim">0,433</td>
+                <td><span class="sig">***</span></td>
+              </tr>
+              <tr>
+                <td>VŠ vzdělání</td>
+                <td class="td-num pos"><strong>+0,112</strong></td>
+                <td class="td-num dim">0,010</td>
+                <td><span class="sig">***</span></td>
+              </tr>
+              <tr>
+                <td>Vyučení bez maturity</td>
+                <td class="td-num neg"><strong>−0,079</strong></td>
+                <td class="td-num dim">0,008</td>
+                <td><span class="sig">***</span></td>
+              </tr>
+              <tr>
+                <td>Neprac. důchodci</td>
+                <td class="td-num neg">−0,022</td>
+                <td class="td-num dim">0,007</td>
+                <td><span class="sig">**</span></td>
+              </tr>
+              <tr>
+                <td>Podnikatelé / OSVČ</td>
+                <td class="td-num pos"><strong>+0,071</strong></td>
+                <td class="td-num dim">0,008</td>
+                <td><span class="sig">***</span></td>
+              </tr>
+              <tr>
+                <td>Nezaměstnanost</td>
+                <td class="td-num neg">−0,037</td>
+                <td class="td-num dim">0,013</td>
+                <td><span class="sig">**</span></td>
+              </tr>
+              <tr>
+                <td>Věřící</td>
+                <td class="td-num neg">−0,020</td>
+                <td class="td-num dim">0,003</td>
+                <td><span class="sig">***</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="reveal" style="font-size: 0.78rem; color: var(--dim); margin-top: 0.5rem;">
+          *** p &lt; 0.001 &nbsp;·&nbsp; ** p &lt; 0.01 &nbsp;·&nbsp; VIF max = 2,71 (bez multikolinearity)
+        </p>
+      </div>
+
+      <div>
+        <div class="card reveal reveal-delay-1" style="margin-bottom:1rem;">
+          <div class="card-title">Kvalita modelu</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:0.5rem;">
+            <div>
+              <div style="font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:var(--gold); line-height:1;">0,188</div>
+              <div style="font-size:0.72rem; color:var(--dim); text-transform:uppercase; letter-spacing:0.08em;">R²</div>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:var(--gold); line-height:1;">0,188</div>
+              <div style="font-size:0.72rem; color:var(--dim); text-transform:uppercase; letter-spacing:0.08em;">Adj. R²</div>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:rgba(255,255,255,0.7); line-height:1;">29 130</div>
+              <div style="font-size:0.72rem; color:var(--dim); text-transform:uppercase; letter-spacing:0.08em;">AICc</div>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:rgba(255,255,255,0.7); line-height:1;">6 157</div>
+              <div style="font-size:0.72rem; color:var(--dim); text-transform:uppercase; letter-spacing:0.08em;">n obcí</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="highlight-box reveal reveal-delay-2">
+          <strong>Problém:</strong> R² = 0,188 znamená, že model vysvětluje
+          jen ~19 % variability volební podpory Pirátů.
+          Zbývajících 81 % leží mimo model — pravděpodobně v
+          <strong>prostorové heterogenitě vztahů</strong>.
+        </div>
+
+        <div class="map-wrap reveal reveal-delay-3">
+          <img src="../output/figures/12_ols_forest_plot.png" alt="OLS koeficienty s intervaly spolehlivosti" loading="lazy">
+          <div class="map-caption">
+            <span>OLS koeficienty s 95% intervaly spolehlivosti</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MORAN'S I ════════════════════════════════════════════ -->
+<section id="morans-i">
+  <div class="container">
+    <div class="section-label">06 — Moran's I diagnostika</div>
+    <h2 class="section-title reveal">Prostorová <span>autokorelace</span></h2>
+    <p class="section-lead reveal reveal-delay-1">Moran's I test reziduí OLS modelu: mají sousední obce podobná rezidua? Pokud ano, OLS nestačí.</p>
+
+    <div class="two-col">
+      <div>
+        <div class="map-wrap reveal reveal-delay-1">
+          <img src="../output/maps/02_mapa_rezidua_ols.png" alt="Rezidua OLS modelu" loading="lazy">
+          <div class="map-caption">
+            <span>Rezidua OLS modelu — prostorové shluky jsou patrné</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="map-wrap reveal reveal-delay-1">
+          <img src="../output/figures/08_moran_scatterplot_ols.png" alt="Moran scatterplot" loading="lazy">
+          <div class="map-caption">
+            <span>Moran scatterplot — OLS rezidua vs. prostorové zpoždění</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-strip reveal reveal-delay-2" style="margin-top: 2.5rem;">
+      <div class="stat-strip-item">
+        <span class="stat-strip-num">0,080</span>
+        <span class="stat-strip-label">Moran's I (OLS)</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num">0,001</span>
+        <span class="stat-strip-label">p-hodnota</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" style="color: #6FD98E;">−0,002</span>
+        <span class="stat-strip-label">Moran's I (GWR)</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" style="color: #6FD98E;">0,574</span>
+        <span class="stat-strip-label">p-hodnota (GWR)</span>
+      </div>
+    </div>
+
+    <div class="highlight-box reveal reveal-delay-3">
+      <strong>Interpretace:</strong> Moran's I = 0,080 je statisticky průkazné (p = 0,001 ***).
+      OLS rezidua vykazují <strong>pozitivní prostorovou autokorelaci</strong> —
+      sousední obce mají systematicky podobná rezidua.
+      To svědčí o prostorové <strong>nestacionaritě vztahů</strong> a nutnosti
+      geograficky váženého přístupu.
+    </div>
+
+    <div class="big-quote reveal reveal-delay-3">
+      Relationship between education and Pirate support<br>
+      is not the same everywhere.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GWR MODEL ══════════════════════════════════════════════ -->
+<section id="gwr-model">
+  <div class="container">
+    <div class="section-label">07 — GWR Model</div>
+    <h2 class="section-title reveal">Geographically Weighted <span>Regression</span></h2>
+    <p class="section-lead reveal reveal-delay-1">Každá obec dostane vlastní regresní model — 6 157 lokálních modelů místo jednoho globálního.</p>
+
+    <div class="formula reveal">
+      <strong style="color:var(--gold);">GWR specifikace:</strong><br>
+      Kernel: <strong>Exponential (adaptive)</strong> &nbsp;·&nbsp;
+      Bandwidth: <strong>23 sousedů</strong> &nbsp;·&nbsp;
+      Optimalizace: <strong>AICc minimalizace</strong><br>
+      Efektivní parametry: <strong>1 272,8</strong> (z 6 157 pozorování)
+    </div>
+
+    <h3 class="reveal" style="font-family:'Space Grotesk',sans-serif; font-size:1.2rem; margin: 2.5rem 0 1rem; color: var(--gold);">OLS vs. GWR — srovnání klíčových metrik</h3>
+
+    <div class="comparison reveal reveal-delay-1">
+      <div class="comparison-col">
+        <div class="comparison-label" style="color: var(--dim);">OLS — Globální model</div>
+        <div class="comparison-row">
+          <span class="comparison-key">R²</span>
+          <span class="comparison-val">0,188</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Adjusted R²</span>
+          <span class="comparison-val">0,188</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">AICc</span>
+          <span class="comparison-val">29 130</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Moran's I reziduí</span>
+          <span class="comparison-val" style="color:#F27575;">0,080 ***</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Koeficienty</span>
+          <span class="comparison-val">7 globálních</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Prostorová heterogenita</span>
+          <span class="comparison-val" style="color:#F27575;">Nevyřešena ✗</span>
+        </div>
+      </div>
+
+      <div class="comparison-col winner">
+        <div class="comparison-label">GWR — Lokální modely</div>
+        <div class="comparison-row">
+          <span class="comparison-key">R²</span>
+          <span class="comparison-val gold-val">0,445 <span style="font-size:0.75rem; color:#6FD98E;">(+25,6 p.p.)</span></span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Adjusted R²</span>
+          <span class="comparison-val gold-val">0,300 <span style="font-size:0.75rem; color:#6FD98E;">(+11,2 p.p.)</span></span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">AICc</span>
+          <span class="comparison-val gold-val">28 601 <span style="font-size:0.75rem; color:#6FD98E;">(−529)</span></span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Moran's I reziduí</span>
+          <span class="comparison-val" style="color:#6FD98E;">−0,002 (ns) ✓</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Koeficienty</span>
+          <span class="comparison-val">6 157 lokálních</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-key">Prostorová heterogenita</span>
+          <span class="comparison-val" style="color:#6FD98E;">Eliminována ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-wrap reveal reveal-delay-2">
+      <img src="../output/figures/10_ols_vs_gwr_srovnani.png" alt="Srovnání OLS a GWR metrik" loading="lazy">
+      <div class="map-caption">
+        <span>Vizuální srovnání OLS vs. GWR — čtyři klíčové metriky</span>
+      </div>
+    </div>
+
+    <div class="map-wrap reveal reveal-delay-3">
+      <img src="../output/figures/11_moran_ols_vs_gwr.png" alt="Moran's I OLS vs GWR" loading="lazy">
+      <div class="map-caption">
+        <span>Eliminace prostorové autokorelace: Moran's I OLS → GWR</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LOKÁLNÍ KOEFICIENTY ═══════════════════════════════════ -->
+<section id="lokalni-koeficienty">
+  <div class="container">
+    <div class="section-label">08 — Lokální koeficienty</div>
+    <h2 class="section-title reveal">Prostorová <span>nestacionarita</span></h2>
+    <p class="section-lead reveal reveal-delay-1">Lokální koeficienty mění znaménko napříč územím — klíčový důkaz nestacionarity. Vztah mezi vzděláním a hlasováním pro Piráty není všude stejný.</p>
+
+    <!-- Coefficient ranges -->
+    <div class="coef-range reveal reveal-delay-2">
+
+      <div class="coef-row">
+        <div class="coef-header">
+          <span class="coef-name">VZDELANI_VYSOKO — VŠ vzdělání</span>
+          <span class="coef-ols">OLS globální: +0,112</span>
+        </div>
+        <!-- Range: min -0.206, max +0.426 → total span 0.632. Zero at 0.206/0.632 = 32.6% from left -->
+        <div class="range-bar-wrap" id="range1">
+          <div class="range-bar-zero" style="left: 32.6%;"></div>
+          <div class="range-bar-fill mixed" style="left: 3%; width: 90%;"></div>
+        </div>
+        <div class="range-labels">
+          <span class="range-label" style="color:#F27575;">Min: −0,206</span>
+          <span class="range-label">Medián: +0,089</span>
+          <span class="range-label" style="color:#6FD98E;">Max: +0,426</span>
+        </div>
+      </div>
+
+      <div class="coef-row">
+        <div class="coef-header">
+          <span class="coef-name">VZDELANI_STR_BEZ — Vyučení bez maturity</span>
+          <span class="coef-ols">OLS globální: −0,079</span>
+        </div>
+        <!-- Range: min -0.374, max +0.167 → span 0.541. Zero at 0.374/0.541 = 69.1% from left -->
+        <div class="range-bar-wrap" id="range2">
+          <div class="range-bar-zero" style="left: 69.1%;"></div>
+          <div class="range-bar-fill mixed" style="left: 3%; width: 90%;"></div>
+        </div>
+        <div class="range-labels">
+          <span class="range-label" style="color:#F27575;">Min: −0,374</span>
+          <span class="range-label">Medián: −0,075</span>
+          <span class="range-label" style="color:#6FD98E;">Max: +0,167</span>
+        </div>
+      </div>
+
+      <div class="coef-row">
+        <div class="coef-header">
+          <span class="coef-name">PODNIKATELE — Podnikatelé / OSVČ</span>
+          <span class="coef-ols">OLS globální: +0,071</span>
+        </div>
+        <!-- Range: min -0.177, max +0.237 → span 0.414. Zero at 0.177/0.414 = 42.8% from left -->
+        <div class="range-bar-wrap" id="range3">
+          <div class="range-bar-zero" style="left: 42.8%;"></div>
+          <div class="range-bar-fill mixed" style="left: 3%; width: 90%;"></div>
+        </div>
+        <div class="range-labels">
+          <span class="range-label" style="color:#F27575;">Min: −0,177</span>
+          <span class="range-label">Medián: +0,045</span>
+          <span class="range-label" style="color:#6FD98E;">Max: +0,237</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table: full ranges -->
+    <div class="table-wrap reveal reveal-delay-3">
+      <table>
+        <thead>
+          <tr>
+            <th>Prediktor</th>
+            <th style="text-align:right">OLS globální</th>
+            <th style="text-align:right">Lok. minimum</th>
+            <th style="text-align:right">Lok. medián</th>
+            <th style="text-align:right">Lok. maximum</th>
+            <th>Znaménkový flip?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>VŠ vzdělání</td>
+            <td class="td-num pos">+0,112</td>
+            <td class="td-num neg">−0,206</td>
+            <td class="td-num">+0,089</td>
+            <td class="td-num pos">+0,426</td>
+            <td><span class="badge">Ano ✓</span></td>
+          </tr>
+          <tr>
+            <td>Vyučení bez maturity</td>
+            <td class="td-num neg">−0,079</td>
+            <td class="td-num neg">−0,374</td>
+            <td class="td-num neg">−0,075</td>
+            <td class="td-num pos">+0,167</td>
+            <td><span class="badge">Ano ✓</span></td>
+          </tr>
+          <tr>
+            <td>Podnikatelé / OSVČ</td>
+            <td class="td-num pos">+0,071</td>
+            <td class="td-num neg">−0,177</td>
+            <td class="td-num pos">+0,045</td>
+            <td class="td-num pos">+0,237</td>
+            <td><span class="badge">Ano ✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="map-grid cols-3 reveal reveal-delay-2">
+      <div class="map-wrap">
+        <img src="../output/maps/04_coef_VZDELANI_VYSOKO.png" alt="Lokální koeficient VŠ vzdělání" loading="lazy">
+        <div class="map-caption"><span>Lok. koef. — VŠ vzdělání</span><span>RdBu škála</span></div>
+      </div>
+      <div class="map-wrap">
+        <img src="../output/maps/05_coef_VZDELANI_STR_BEZ.png" alt="Lokální koeficient vyučení" loading="lazy">
+        <div class="map-caption"><span>Lok. koef. — Vyučení bez mat.</span><span>RdBu škála</span></div>
+      </div>
+      <div class="map-wrap">
+        <img src="../output/maps/06_coef_PODNIKATELE.png" alt="Lokální koeficient podnikatelé" loading="lazy">
+        <div class="map-caption"><span>Lok. koef. — Podnikatelé</span><span>RdBu škála</span></div>
+      </div>
+    </div>
+
+    <div class="highlight-box reveal">
+      <strong>Klíčové zjištění:</strong> VZDELANI_VYSOKO má v Praze a Brně silný pozitivní efekt (+0,4).
+      V průmyslových regionech severních Čech a části Moravy se koeficient obrací —
+      vyšší vzdělanost zde <em>nesouvisí</em> s vyšší podporou Pirátů.
+      V těchto oblastech dominují jiné faktory volebního rozhodování.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LOKÁLNÍ R² ════════════════════════════════════════════ -->
+<section id="lokalni-r2">
+  <div class="container">
+    <div class="section-label">09 — Lokální R²</div>
+    <h2 class="section-title reveal">Kde model <span>funguje</span>?</h2>
+    <p class="section-lead reveal reveal-delay-1">Lokální R² ukazuje, jak dobře GWR vysvětluje volební chování v každé konkrétní obci.</p>
+
+    <div class="stat-strip reveal reveal-delay-2">
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="0.243" data-suffix="" data-decimals="3">0,243</span>
+        <span class="stat-strip-label">Minimum</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="0.406" data-suffix="" data-decimals="3" style="color:var(--gold);">0,406</span>
+        <span class="stat-strip-label">Medián</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="0.838" data-suffix="" data-decimals="3">0,838</span>
+        <span class="stat-strip-label">Maximum</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="0.433" data-suffix="" data-decimals="3">0,433</span>
+        <span class="stat-strip-label">Průměr</span>
+      </div>
+    </div>
+
+    <div class="map-wrap reveal reveal-delay-2">
+      <img src="../output/maps/03_mapa_local_R2.png" alt="Lokální R² GWR modelu" loading="lazy">
+      <div class="map-caption">
+        <span>Lokální R² GWR modelu — Praha, Brno a pohraničí: nejlepší fit</span>
+        <span>Zdroj: GWR výpočet | n = 6 157 obcí | Škála: BuPu</span>
+      </div>
+    </div>
+
+    <div class="highlight-box reveal reveal-delay-3">
+      <strong>Interpretace:</strong> GWR model nejlépe vysvětluje volební chování
+      v metropolitních oblastech (Praha, Brno, Ostrava) a pohraničních regionech —
+      lokální R² dosahuje až 0,838.
+      Slabší vysvětlitelnost (R² kolem 0,24) se vyskytuje v rurálních oblastech
+      středních Čech, kde sociodemografické prediktory nestačí zachytit
+      specifika lokálního volebního rozhodování.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SHRNUTÍ ════════════════════════════════════════════════ -->
+<section id="shrnuti">
+  <div class="container">
+    <div class="section-label">10 — Shrnutí</div>
+    <h2 class="section-title reveal">Klíčová <span>zjištění</span></h2>
+    <p class="section-lead reveal reveal-delay-1">GWR odkryla prostorovou nestacionaritu, která v globálním OLS modelu zůstala skryta.</p>
+
+    <div class="card-grid cols-2 reveal reveal-delay-2">
+      <div class="card">
+        <div class="card-title">Sociodemografie sama nestačí</div>
+        <p style="font-size:0.92rem; color:var(--dim);">
+          Kombinace vzdělání, věku, ekonomiky a religiozity vysvětluje
+          globálně jen ~19 % variability (OLS R² = 0,188). GWR zvyšuje
+          vysvětlitelnost na 44,5 % — ale klíčové je odkrytí lokálních vzorců,
+          ne pouhé zvýšení R².
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Silná prostorová struktura</div>
+        <p style="font-size:0.92rem; color:var(--dim);">
+          Výrazná lokální variabilita koeficientů — vztahy nejsou
+          všude stejné (Moran's I OLS = 0,080 ***). Po GWR je prostorová
+          autokorelace eliminována (Moran's I GWR = −0,002, p = 0,574 ns).
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Piráti jako metropolitní fenomén</div>
+        <p style="font-size:0.92rem; color:var(--dim);">
+          Model potvrzuje silný pozitivní efekt vysokoškolského vzdělání
+          v Praze a Brně. V průmyslových regionech se ale koeficient vzdělání
+          obrací — lokální kontext dominuje nad globálním vzorcem.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">GWR jako efektivní nástroj</div>
+        <p style="font-size:0.92rem; color:var(--dim);">
+          AICc poklesl o 529 bodů (29 130 → 28 601). Adj. R² vzrostl o 11,2 p.p.
+          navzdory penalizaci za 1 272,8 efektivních parametrů. GWR prokázalo
+          přínos nad rámec prostého přetrénování.
+        </p>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="font-family:'Space Grotesk',sans-serif; font-size:1.1rem; margin: 3rem 0 1rem; color: var(--gold);">Metodické limity</h3>
+
+    <div class="card-grid cols-3 reveal reveal-delay-2">
+      <div class="card">
+        <div class="card-title">Ekologický klam</div>
+        <p style="font-size:0.85rem; color:var(--dim);">Data jsou agregovaná za obce, nikoli za jednotlivé voliče. Vztahy platí na úrovni obcí — přímá interpretace o individuálním volebním chování by byla metodicky chybná.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Malý bandwidth</div>
+        <p style="font-size:0.85rem; color:var(--dim);">BW = 23 sousedů (0,37 % dat) je velmi lokální. Riziko přetrénování existuje, ale je mitigováno adjusted R² — po penalizaci komplexity model stále přináší přírůstek.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Chybějící prediktory</div>
+        <p style="font-size:0.85rem; color:var(--dim);">6 prediktorů ze SLDB 2021 nepokrývá veškeré determinanty volebního chování. Stranická identita, lokální politický kontext ani historické vzorce nejsou v modelu zahrnuty.</p>
+      </div>
+    </div>
+
+    <div class="big-quote reveal reveal-delay-3">
+      Volby nejsou univerzální fenomén —<br>
+      jejich dynamika se podél mapy mění.
+    </div>
+
+    <div class="stat-strip reveal reveal-delay-3" style="margin-top:3rem;">
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="0.188" data-suffix="" data-decimals="3" style="color:rgba(255,255,255,0.5);">0,188</span>
+        <span class="stat-strip-label">OLS R²</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" style="font-size:2rem; color:var(--gold);">→</span>
+        <span class="stat-strip-label">GWR zlepšení</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="0.445" data-suffix="" data-decimals="3">0,445</span>
+        <span class="stat-strip-label">GWR R²</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" data-counter="529" data-suffix="">529</span>
+        <span class="stat-strip-label">Snížení AICc</span>
+      </div>
+      <div class="stat-strip-item">
+        <span class="stat-strip-num" style="color:#6FD98E;">✓</span>
+        <span class="stat-strip-label">Autokorelace eliminována</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <p><span>Analýza volebního úspěchu České pirátské strany — PSP ČR 2025</span></p>
+      <p>Autoři: <span>Vojtěch Svoboda &amp; Petr Mikeska</span> &nbsp;·&nbsp; Kurz: <span>POGEO</span> &nbsp;·&nbsp; Duben 2026</p>
+      <p>Metoda: <span>OLS + GWR (GWmodel R)</span> &nbsp;·&nbsp; Data: <span>ČSÚ 2025, SLDB 2021</span> &nbsp;·&nbsp; n = <span>6 157 obcí</span></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* ─── Intersection Observer: Reveal ──────────────────────── */
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  revealEls.forEach(el => revealObserver.observe(el));
+
+  /* ─── Animated Counters ──────────────────────────────────── */
+  function animateCounter(el) {
+    const target = parseFloat(el.dataset.counter);
+    const suffix = el.dataset.suffix || '';
+    const decimals = parseInt(el.dataset.decimals || '0');
+    const duration = 1400;
+    const start = performance.now();
+
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const current = target * ease;
+      el.textContent = (decimals > 0
+        ? current.toFixed(decimals)
+        : Math.round(current).toLocaleString('cs-CZ')) + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = (decimals > 0
+        ? target.toFixed(decimals)
+        : target.toLocaleString('cs-CZ')) + suffix;
+    }
+    requestAnimationFrame(update);
+  }
+
+  const counterEls = document.querySelectorAll('[data-counter]');
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.animated) {
+        entry.target.dataset.animated = '1';
+        animateCounter(entry.target);
+        counterObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  counterEls.forEach(el => counterObserver.observe(el));
+
+  /* ─── Nav Active Section ──────────────────────────────────── */
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '-60px 0px 0px 0px' });
+
+  sections.forEach(s => sectionObserver.observe(s));
+
+  /* ─── Staggered child reveals ────────────────────────────── */
+  // Already handled by CSS reveal-delay-N classes
+</script>
+</body>
+</html>
