@@ -81,10 +81,11 @@ export default function OLSModel() {
             </div>
 
             <div className="reveal delay-3">
-              <MapImg
-                src="/figures/12_ols_forest_plot.png"
-                alt="OLS koeficienty s intervaly spolehlivosti"
-                caption="OLS koeficienty s 95% intervaly spolehlivosti"
+                            <Figure
+                src="figures/12_ols_forest_plot.png"
+                alt="Forest plot OLS koeficientů"
+                caption="Standardizované koeficienty OLS modelu"
+                source="Vlastní výpočet"
               />
             </div>
           </div>

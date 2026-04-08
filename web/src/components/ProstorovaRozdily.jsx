@@ -30,11 +30,11 @@ export default function ProstorovaRozdily() {
         </div>
 
         <div className="reveal delay-3">
-          <MapImg
-            src="/maps/01_mapa_pirati_uspech.png"
-            alt="Mapa volebního úspěchu Pirátů v obcích ČR 2025"
-            caption="Volební úspěch Pirátů — PSP ČR 2025 | n = 6 157 obcí"
-            source="Zdroj: ČSÚ 2025 | Škála: YlOrRd"
+                    <MapImg
+            src="maps/01_mapa_pirati_uspech.png"
+            alt="Mapa úspěchu Pirátů ve volbách 2025"
+            caption="Volební úspěch Pirátů v obcích ČR"
+            source="ČSÚ, vlastní výpočet"
           />
         </div>
 

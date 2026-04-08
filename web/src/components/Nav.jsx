@@ -21,10 +21,14 @@ export default function Nav() {
   return (
     <nav className="nav">
       <div className="nav-inner">
-        <a href="#hero" className="nav-logo-wrap">
-          <img src="/logo.png" alt="Piráti logo" className="nav-logo-img" />
-          <span className="nav-logo-text">Piráti 2025 — POGEO</span>
-        </a>
+              <a href="#uvod" className="nav-logo">
+        <div className="nav-logo-text">
+          POGEO 2026
+        </div>
+        <div className="nav-logo-img-wrap">
+          <img src="logo.png" alt="Piráti logo" className="nav-logo-img" />
+        </div>
+      </a>
         <ul className="nav-links">
           {NAV_ITEMS.map(({ href, label }) => (
             <li key={href}>

@@ -29,11 +29,11 @@ export default function LokR2() {
         </div>
 
         <div className="reveal delay-2">
-          <MapImg
-            src="/maps/03_mapa_local_R2.png"
-            alt="Lokální R² GWR modelu"
-            caption="Lokální R² GWR modelu — Praha, Brno a pohraničí: nejlepší fit"
-            source="Zdroj: GWR výpočet | Škála: BuPu"
+                    <MapImg
+            src="maps/03_mapa_local_R2.png"
+            alt="Mapa lokálního R²"
+            caption="Lokální R² pro GWR model"
+            source="Vlastní výpočet"
           />
         </div>
 

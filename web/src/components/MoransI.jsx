@@ -25,15 +25,17 @@ export default function MoransI() {
         </p>
 
         <div className="map-grid-2 reveal delay-2">
-          <MapImg
-            src="/maps/02_mapa_rezidua_ols.png"
-            alt="Rezidua OLS modelu"
-            caption="Rezidua OLS — prostorové shluky patrné"
+                    <MapImg
+            src="maps/02_mapa_rezidua_ols.png"
+            alt="Mapa reziduí OLS"
+            caption="Mapa reziduí OLS modelu"
+            source="Vlastní výpočet"
           />
-          <MapImg
-            src="/figures/08_moran_scatterplot_ols.png"
-            alt="Moran scatterplot OLS reziduí"
-            caption="Moran scatterplot — OLS rezidua vs. prostorové zpoždění"
+          <Figure
+            src="figures/08_moran_scatterplot_ols.png"
+            alt="Moran's I scatterplot pro OLS"
+            caption="Moran's I scatterplot pro rezidua OLS"
+            source="Vlastní výpočet"
           />
         </div>
 
