@@ -13,7 +13,13 @@
       "Bash(apt-cache show:*)",
       "Bash(sudo apt-get:*)",
       "Bash(curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh)",
-      "Bash(bash)"
+      "Bash(bash)",
+      "Bash(grep -E \"\\\\.\\(R|r|csv|gpkg|zip|txt|html|js|jsx|css\\)$\")",
+      "Bash(head:*)",
+      "Bash(wc:*)",
+      "Bash(xargs ls:*)",
+      "Bash(git -C /home/petr-mikeska/projects/pogeo_2026 log --oneline)",
+      "Bash(ls -1 /home/petr-mikeska/projects/pogeo_2026/web/src/components/*.jsx)"
     ]
   }
 }
