@@ -8,7 +8,12 @@
       "Bash(cp /home/petr/Projects/pogeo_2026/output/figures/*.png /home/petr/Projects/pogeo_2026/web/public/figures/)",
       "Bash(npm install:*)",
       "Read(//usr/local/bin/**)",
-      "Bash(command -v pnpm bun yarn)"
+      "Bash(command -v pnpm bun yarn)",
+      "Read(//usr/bin/**)",
+      "Bash(apt-cache show:*)",
+      "Bash(sudo apt-get:*)",
+      "Bash(curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh)",
+      "Bash(bash)"
     ]
   }
 }
