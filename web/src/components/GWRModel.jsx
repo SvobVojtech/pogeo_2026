@@ -64,14 +64,14 @@ export default function GWRModel() {
         </div>
 
         <div className="map-grid-2 reveal delay-3">
-                    <Figure
-            src="figures/10_ols_vs_gwr_srovnani.png"
+          <MapImg
+            src={`${import.meta.env.BASE_URL}figures/10_ols_vs_gwr_srovnani.png`}
             alt="Srovnání OLS a GWR"
             caption="Srovnání rozptylu vysvětleného pomocí OLS a GWR"
             source="Vlastní výpočet"
           />
-          <Figure
-            src="figures/11_moran_ols_vs_gwr.png"
+          <MapImg
+            src={`${import.meta.env.BASE_URL}figures/11_moran_ols_vs_gwr.png`}
             alt="Srovnání Moran's I pro OLS a GWR"
             caption="Srovnání prostorové autokorelace reziduí OLS a GWR"
             source="Vlastní výpočet"

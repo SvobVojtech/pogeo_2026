@@ -31,7 +31,7 @@ export default function ProstorovaRozdily() {
 
         <div className="reveal delay-3">
                     <MapImg
-            src="maps/01_mapa_pirati_uspech.png"
+            src={`${import.meta.env.BASE_URL}maps/01_mapa_pirati_uspech.png`}
             alt="Mapa úspěchu Pirátů ve volbách 2025"
             caption="Volební úspěch Pirátů v obcích ČR"
             source="ČSÚ, vlastní výpočet"

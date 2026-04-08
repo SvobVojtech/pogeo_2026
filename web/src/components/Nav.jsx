@@ -26,7 +26,7 @@ export default function Nav() {
           POGEO 2026
         </div>
         <div className="nav-logo-img-wrap">
-          <img src="logo.png" alt="Piráti logo" className="nav-logo-img" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Piráti logo" className="nav-logo-img" />
         </div>
       </a>
         <ul className="nav-links">

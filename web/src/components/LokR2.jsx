@@ -30,7 +30,7 @@ export default function LokR2() {
 
         <div className="reveal delay-2">
                     <MapImg
-            src="maps/03_mapa_local_R2.png"
+            src={`${import.meta.env.BASE_URL}maps/03_mapa_local_R2.png`}
             alt="Mapa lokálního R²"
             caption="Lokální R² pro GWR model"
             source="Vlastní výpočet"

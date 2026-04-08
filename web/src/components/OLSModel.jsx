@@ -81,8 +81,8 @@ export default function OLSModel() {
             </div>
 
             <div className="reveal delay-3">
-                            <Figure
-                src="figures/12_ols_forest_plot.png"
+              <MapImg
+                src={`${import.meta.env.BASE_URL}figures/12_ols_forest_plot.png`}
                 alt="Forest plot OLS koeficientů"
                 caption="Standardizované koeficienty OLS modelu"
                 source="Vlastní výpočet"

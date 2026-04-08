@@ -109,9 +109,9 @@ export default function LokKoeficienty() {
 
         {/* Maps */}
         <div className="map-grid-3 reveal delay-3">
-          <MapImg src="maps/04_coef_VZDELANI_VYSOKO.png"  alt="Lokální koeficient VŠ vzdělání"      caption="Lok. koef. — VŠ vzdělání"        source="RdBu škála" />
-          <MapImg src="maps/05_coef_VZDELANI_STR_BEZ.png" alt="Lokální koeficient vyučení"          caption="Lok. koef. — Vyučení bez mat."   source="RdBu škála" />
-          <MapImg src="maps/06_coef_PODNIKATELE.png"      alt="Lokální koeficient podnikatelé"       caption="Lok. koef. — Podnikatelé"         source="RdBu škála" />
+          <MapImg src={`${import.meta.env.BASE_URL}maps/04_coef_VZDELANI_VYSOKO.png`}  alt="Lokální koeficient VŠ vzdělání"      caption="Lok. koef. — VŠ vzdělání"        source="RdBu škála" />
+          <MapImg src={`${import.meta.env.BASE_URL}maps/05_coef_VZDELANI_STR_BEZ.png`} alt="Lokální koeficient vyučení"          caption="Lok. koef. — Vyučení bez mat."   source="RdBu škála" />
+          <MapImg src={`${import.meta.env.BASE_URL}maps/06_coef_PODNIKATELE.png`}      alt="Lokální koeficient podnikatelé"       caption="Lok. koef. — Podnikatelé"         source="RdBu škála" />
         </div>
 
         <div className="highlight reveal">

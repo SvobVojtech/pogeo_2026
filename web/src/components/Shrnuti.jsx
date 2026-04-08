@@ -69,7 +69,7 @@ export default function Shrnuti() {
 
         <div style={{ textAlign: 'center', marginTop: '3.5rem' }} className="reveal delay-4">
           <a
-            href="/assets/Prezentace_Svobods_mikeska.pptx"
+            href={`${import.meta.env.BASE_URL}assets/Prezentace_Svobods_mikeska.pptx`}
             className="btn-primary"
             download
             style={{ display: 'inline-flex' }}

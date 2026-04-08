@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="container">
         <div className="footer-logo">
-          <img src="logo.png" alt="Piráti logo" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Piráti logo" />
           <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.9rem', color: 'var(--dim)' }}>
             Analýza volebního úspěchu Pirátů — PSP ČR 2025
           </span>

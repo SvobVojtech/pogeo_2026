@@ -62,7 +62,7 @@ export default function Hero() {
                 Výsledky analýzy
               </a>
               <a
-                href="/assets/Prezentace_Svobods_mikeska.pptx"
+                href={`${import.meta.env.BASE_URL}assets/Prezentace_Svobods_mikeska.pptx`}
                 className="btn-secondary"
                 download
                 aria-label="Stáhnout prezentaci ve formátu PPTX"
