@@ -3,7 +3,12 @@
     "allow": [
       "Bash(ls /c/Python*/python.exe)",
       "Read(//c/Users/vojtt/AppData/Local/Programs/Python/**)",
-      "Read(//c/Program Files/R/**)"
+      "Read(//c/Program Files/R/**)",
+      "Bash(cp /home/petr/Projects/pogeo_2026/output/maps/*.png /home/petr/Projects/pogeo_2026/web/public/maps/)",
+      "Bash(cp /home/petr/Projects/pogeo_2026/output/figures/*.png /home/petr/Projects/pogeo_2026/web/public/figures/)",
+      "Bash(npm install:*)",
+      "Read(//usr/local/bin/**)",
+      "Bash(command -v pnpm bun yarn)"
     ]
   }
 }
