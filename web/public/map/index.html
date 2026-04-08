@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volební atlas · Piráti PSP 2025</title>
+  <meta name="description" content="Interaktivní volební atlas výsledků České pirátské strany v parlamentních volbách 2025. Prostorová analýza na úrovni obcí, ORP, okresů a krajů." />
+  <link rel="icon" href="../logo.png" />
+
+  <!-- Fonts — stejné jako hlavní projekt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet Draw -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Načítání geodat…</div>
+</div>
+
+<!-- Leaflet mapa -->
+<div id="map"></div>
+
+<!-- Přepínač podkladů (nahoře uprostřed) -->
+<div id="map-switcher">
+  <button class="pill active" data-layer="dark">Mapa</button>
+  <button class="pill" data-layer="osm">OSM</button>
+  <button class="pill" data-layer="aerial">Letecká</button>
+</div>
+
+<!-- Toast hint (kreslení) -->
+<div id="map-hint">Klikejte pro body polygonu · dvakrát pro dokončení · Esc pro zrušení</div>
+
+<!-- Tlačítko vlastní polygon -->
+<button id="draw-btn" title="Nakreslit vlastní polygon">
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="1,11 5,1.5 11.5,7.5 7.5,10"/>
+    <circle cx="11.5" cy="11.5" r="1.2" fill="currentColor" stroke="none"/>
+  </svg>
+  Vlastní polygon
+</button>
+
+<!-- Levý panel -->
+<div id="panel">
+
+  <!-- Mobile drag handle -->
+  <div class="panel-handle" id="panel-handle">
+    <div class="panel-handle-bar"></div>
+  </div>
+
+  <div class="panel-scroll">
+
+    <!-- Header -->
+    <div class="panel-header">
+      <img src="../logo.png" alt="Piráti" class="panel-logo" />
+      <div class="panel-header-text">
+        <div class="panel-title">Volební atlas · Piráti 2025</div>
+        <div class="panel-subtitle">PSP ČR · GWR prostorová analýza</div>
+      </div>
+    </div>
+
+    <!-- Sekce 1: Výběr oblasti -->
+    <div class="psec">
+      <div class="psec-label">Výběr oblasti</div>
+
+      <div class="pill-group" id="level-pills">
+        <button class="pill active" data-level="obce">Obce</button>
+        <button class="pill" data-level="orp">ORP</button>
+        <button class="pill" data-level="okresy">Okresy</button>
+        <button class="pill" data-level="kraje">Kraje</button>
+      </div>
+
+      <div class="search-wrap" id="search-wrap">
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Hledat nebo vybrat…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div class="drop-list" id="drop-list"></div>
+      </div>
+
+      <div class="error-box" id="error-box"></div>
+
+      <button class="btn-analyze" id="analyze-btn" disabled>
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="6.5" cy="6.5" r="5"/>
+          <line x1="6.5" y1="3.5" x2="6.5" y2="6.5"/>
+          <line x1="6.5" y1="6.5" x2="8.8" y2="8.8"/>
+        </svg>
+        Analyzovat
+      </button>
+    </div>
+
+    <!-- Sekce 2: Ukazatel mapy -->
+    <div class="psec">
+      <div class="psec-label">Ukazatel mapy</div>
+
+      <select class="styled-select" id="indicator-sel">
+        <option value="pirati_pct">% Pirátů</option>
+        <option value="vzdelani_vysoko">Vzdělání VŠ</option>
+        <option value="vek65">Věk 65+</option>
+        <option value="nezamest">Nezaměstnanost</option>
+        <option value="verici">Věřící</option>
+        <option value="romove">Romové</option>
+      </select>
+
+      <div class="legend">
+        <div class="legend-bar" id="legend-bar"></div>
+        <div class="legend-labels">
+          <span id="leg-min">—</span>
+          <span id="leg-max">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sekce 3: Výsledky (animovaný slide-in) -->
+    <div class="psec" id="results-sec">
+      <div class="psec-label">Výsledky analýzy</div>
+
+      <!-- Hlavička výsledků -->
+      <div class="res-header">
+        <div>
+          <div class="res-big" id="res-pct">—</div>
+        </div>
+        <div class="res-meta">
+          <div class="res-name" id="res-name">—</div>
+          <div class="res-level" id="res-level"></div>
+          <div class="res-count" id="res-count"></div>
+        </div>
+      </div>
+
+      <!-- Piráti progress bar -->
+      <div class="pirati-progress">
+        <div class="pirati-progress-fill" id="pirati-fill" style="width:0%"></div>
+      </div>
+
+      <!-- Záložky -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="volby">Volby</button>
+        <button class="tab-btn" data-tab="demo">Demografie</button>
+        <button class="tab-btn" data-tab="edu">Vzdělání & Práce</button>
+      </div>
+
+      <!-- TAB: Volby -->
+      <div class="tab-pane active" id="tab-volby">
+        <div class="prog-item">
+          <div class="prog-head">
+            <span class="prog-label">% Pirátů (skutečnost)</span>
+            <span class="prog-val" id="v-pirati">—</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill purple" id="b-pirati" style="width:0%"></div></div>
+        </div>
+
+        <div class="prog-item">
+          <div class="prog-head">
+            <span class="prog-label">OLS predikce</span>
+            <span class="prog-val" id="v-ols">—</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill gold" id="b-ols" style="width:0%"></div></div>
+        </div>
+
+        <div class="stat-row" style="margin-top:0.2rem">
+          <span class="stat-k">GWR reziduum</span>
+          <span class="stat-v" id="v-resid">—</span>
+        </div>
+        <div class="hint" style="margin-bottom:0.6rem">Rozdíl skutečnosti a GWR predikce — blíže 0 = model dobře fituje</div>
+
+        <div class="stat-row">
+          <span class="stat-k">OLS reziduum</span>
+          <span class="stat-v" id="v-resid-ols">—</span>
+        </div>
+
+        <div class="prog-item" style="margin-top:0.7rem">
+          <div class="prog-head">
+            <span class="prog-label">Lokální R² (GWR)</span>
+            <span class="prog-val g" id="v-r2">—</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill green" id="b-r2" style="width:0%"></div></div>
+          <div class="hint">Jak dobře model vysvětluje variabilitu v tomto místě</div>
+        </div>
+      </div>
+
+      <!-- TAB: Demografie -->
+      <div class="tab-pane" id="tab-demo">
+        <div class="chart-lbl">Věková struktura</div>
+        <div class="chart-wrap" style="height:100px; margin-bottom:0.85rem">
+          <canvas id="age-chart"></canvas>
+        </div>
+
+        <div class="chart-lbl">Pohlaví</div>
+        <div class="gender-row">
+          <div class="gender-card m">
+            <div class="gender-num" id="v-muzi">—</div>
+            <div class="gender-lbl">Muži</div>
+          </div>
+          <div class="gender-card f">
+            <div class="gender-num" id="v-zeny">—</div>
+            <div class="gender-lbl">Ženy</div>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-k">Věřící</span>
+          <span class="stat-v" id="v-verici">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-k">Romové</span>
+          <span class="stat-v" id="v-romove">—</span>
+        </div>
+      </div>
+
+      <!-- TAB: Vzdělání & Práce -->
+      <div class="tab-pane" id="tab-edu">
+        <div class="chart-lbl">Vzdělanostní struktura</div>
+        <div class="chart-wrap" style="height:140px; margin-bottom:0.85rem; display:flex; align-items:center; justify-content:center;">
+          <canvas id="edu-chart"></canvas>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-k">Nezaměstnanost</span>
+          <span class="stat-v re" id="v-nezamest">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-k">Zaměstnanci</span>
+          <span class="stat-v" id="v-zamestnanci">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-k">Podnikatelé / OSVČ</span>
+          <span class="stat-v g" id="v-podnikatele">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-k">Zaměstnavatelé</span>
+          <span class="stat-v" id="v-zamestnavatele">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-k">Důchodci (nepracující)</span>
+          <span class="stat-v" id="v-neprac">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-k">Důchodci (pracující)</span>
+          <span class="stat-v" id="v-pracduch">—</span>
+        </div>
+      </div>
+
+    </div>
+    <!-- /results-sec -->
+
+    <!-- Tip -->
+    <div class="psec" style="border-bottom:none; padding-bottom:1.4rem;">
+      <div class="info-box">
+        <strong>Tip:</strong> Klikněte na obec přímo na mapě, nebo nakreslete vlastní polygon tlačítkem vpravo dole.
+      </div>
+    </div>
+
+  </div>
+  <!-- /panel-scroll -->
+</div>
+<!-- /panel -->
+
+<script src="app.js"></script>
+</body>
+</html>
