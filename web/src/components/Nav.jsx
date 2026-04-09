@@ -37,6 +37,11 @@ export default function Nav() {
               </a>
             </li>
           ))}
+          <li>
+            <a href="https://petrmikeska.cz/pogeo/map/" target="_blank" rel="noopener noreferrer">
+              Mapa
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
