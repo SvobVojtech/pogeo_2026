@@ -61,7 +61,15 @@ export default function Footer() {
             <span className="footer-sep">·</span>
             Duben 2026
           </p>
-          <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', opacity: 0.4 }}>
+          <p style={{ marginTop: '1.5rem', display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="https://www.geoinformatics.upol.cz/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--dim)', fontSize: '0.8rem', textDecoration: 'none', opacity: 0.6 }}>
+              Katedra geoinformatiky UP
+            </a>
+            <a href="https://www.pirati.cz/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--dim)', fontSize: '0.8rem', textDecoration: 'none', opacity: 0.6 }}>
+              Česká pirátská strana
+            </a>
+          </p>
+          <p style={{ marginTop: '1rem', fontSize: '0.75rem', opacity: 0.4 }}>
             Výsledky analýzy jsou veřejně dostupné pro akademické účely.
           </p>
         </div>
