@@ -62,10 +62,10 @@ export default function Hero() {
                 Výsledky analýzy
               </a>
               <a
-                href={`${import.meta.env.BASE_URL}assets/Prezentace_Svobods_mikeska.pptx`}
+                href={`${import.meta.env.BASE_URL}assets/prezentace_svobods_mikeska.pdf`}
                 className="btn-secondary"
                 download
-                aria-label="Stáhnout prezentaci ve formátu PPTX"
+                aria-label="Stáhnout prezentaci ve formátu PDF"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path d="M7 1v8M3 6l4 4 4-4M1 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
