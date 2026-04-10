@@ -2,9 +2,11 @@
 
 [![R](https://img.shields.io/badge/R-4.5.2-blue.svg)](https://www.r-project.org/)
 [![GWR](https://img.shields.io/badge/Method-GWR-green.svg)](https://cran.r-project.org/package=GWmodel)
+[![Web](https://img.shields.io/badge/Web-React%20%2B%20Vite-61DAFB.svg)](web/)
+[![Atlas](https://img.shields.io/badge/Atlas-Leaflet%20%2B%20PostGIS-green.svg)](web/public/map/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Prostorová analýza volebního úspěchu České pirátské strany na úrovni obcí s využitím **Geographically Weighted Regression (GWR)**.
+Prostorová analýza volebního úspěchu České pirátské strany na úrovni obcí s využitím **Geographically Weighted Regression (GWR)**. Součástí projektu je prezentační web a interaktivní **Volební atlas** s Leaflet mapou napojený na PostGIS backend.
 
 ## 📊 Klíčové výsledky
 
@@ -29,7 +31,7 @@ Prostorová analýza volebního úspěchu České pirátské strany na úrovni o
 ## 📁 Struktura projektu
 
 ```
-Pogeo2026/
+pogeo_2026/
 ├── R/                              # R skripty
 │   ├── 01_gwr_analyza.R           # Hlavní analýza (EDA → OLS → GWR)
 │   ├── 02_vizualizace.R           # Mapové vizualizace (tmap)
@@ -46,13 +48,42 @@ Pogeo2026/
 │   ├── maps/                       # Mapy (PNG)
 │   └── tables/                     # Tabulky (CSV)
 │
+├── web/                            # Prezentační webová aplikace
+│   ├── src/                        # React komponenty
+│   ├── public/
+│   │   ├── map/                    # Volební atlas (viz níže)
+│   │   │   ├── index.html
+│   │   │   ├── app.js
+│   │   │   └── style.css
+│   │   ├── maps/                   # Statické mapy PNG
+│   │   └── figures/                # Statické grafy PNG
+│   └── vite.config.js              # base: '/pogeo/'
+│
 ├── docs/                           # Dokumentace
 │   ├── ANALYZA_POSTUP_FINAL.txt   # Kompletní metodika a interpretace
 │   └── ARC_GIS_INSTRUKCE.txt      # Návod pro ArcGIS Pro
 │
-├── sldb2021_obce_indikatory.csv   # SLDB 2021 prediktory
 └── README.md                       # Tento soubor
 ```
+
+## 🌐 Webové aplikace
+
+### Prezentační web (`web/`)
+
+React + Vite aplikace dostupná na `petrmikeska.cz/pogeo/`. Obsahuje interaktivní prezentaci metodiky a výsledků analýzy.
+
+```bash
+cd web
+npm install
+npm run dev      # http://localhost:5173/pogeo/
+npm run build    # produkční build → dist/
+```
+
+### Volební atlas (`web/public/map/`)
+
+Interaktivní Leaflet mapa s PostGIS backendem dostupná na `petrmikeska.cz/pogeo/map/`. Viz [web/public/map/README.md](web/public/map/README.md).
+
+---
 
 ## 🚀 Spuštění analýzy
 
