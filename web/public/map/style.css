@@ -432,7 +432,7 @@ body {
 
 /* ─── DRAW BUTTON ─────────────────────────────────────────────────── */
 #draw-btn {
-  position: fixed; bottom: 0.625rem; right: 2.75rem;
+  position: fixed; bottom: 10px; right: 2.75rem;
   z-index: 999;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
@@ -575,7 +575,8 @@ body {
   }
   #panel.open { transform: translateX(0); }
 
-  .panel-header { padding: 0.7rem 1rem 0.6rem; }
+  /* Push header content right of the 44px hamburger (left: 0.75rem) */
+  .panel-header { padding: 0.7rem 1rem 0.6rem 3.75rem; }
   .psec { padding: 0.85rem 1rem; }
   #map-switcher { top: 0.75rem; }
 
