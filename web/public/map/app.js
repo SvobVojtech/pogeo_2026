@@ -6,12 +6,28 @@ const API = 'https://shanghai-villages-doors-tucson.trycloudflare.com';
 const LEVEL_LABEL = { obce: 'Obec', orp: 'ORP', okresy: 'Okres', kraje: 'Kraj', polygon: 'Vlastní polygon' };
 
 const IND = {
-  pirati_pct:      { label: '% Pirátů',      unit: '%', scale: [[26,10,46],[109,31,190],[180,100,255]] },
-  vzdelani_vysoko: { label: 'Vzdělání VŠ',   unit: '%', scale: [[13,18,13],[30,90,55],[111,217,142]] },
-  vek65:           { label: 'Věk 65+',       unit: '%', scale: [[13,13,18],[120,50,50],[242,117,117]] },
-  nezamest:        { label: 'Nezaměstnanost',unit: '%', scale: [[13,13,13],[150,75,20],[242,155,75]] },
-  verici:          { label: 'Věřící',        unit: '%', scale: [[13,13,18],[55,55,130],[110,95,215]] },
-  romove:          { label: 'Romové',        unit: '%', scale: [[13,13,13],[110,30,30],[215,55,55]] },
+  // Volby
+  pirati_pct:  { label: '% Pirátů',     unit: '%',  desc: '', scale: [[26,10,46],[109,31,190],[180,100,255]] },
+  fitted_ols:  { label: 'OLS predikce', unit: '%',  desc: 'Předpovězený výsledek Pirátů dle globálního OLS regresního modelu', scale: [[20,10,46],[90,40,155],[150,80,230]] },
+  resid_ols:   { label: 'OLS reziduum', unit: 'pp', desc: 'Odchylka skutečnosti od OLS predikce — kladné = Piráti silnější, než model čekal', scale: [[190,55,55],[35,35,35],[55,160,100]] },
+  resid_gwr:   { label: 'GWR reziduum', unit: 'pp', desc: 'Odchylka od lokálního GWR modelu — hodnoty blízko 0 znamenají dobrý fit modelu', scale: [[190,55,55],[30,30,30],[55,175,115]] },
+  local_r2:    { label: 'Lokální R²',   unit: '',   desc: 'Podíl variability volebního výsledku vysvětlený lokálním GWR modelem (0 = špatně, 1 = perfektně)', scale: [[13,30,18],[35,110,65],[70,210,120]] },
+  // Vzdělanost
+  vzdelani_vysoko:  { label: 'VŠ vzdělání',          unit: '%', desc: '', scale: [[13,18,13],[30,90,55],[111,217,142]] },
+  vzdelani_str_s:   { label: 'Střední s maturitou',  unit: '%', desc: '', scale: [[13,20,25],[40,110,150],[80,190,230]] },
+  vzdelani_zaklad:  { label: 'Základní vzdělání',    unit: '%', desc: '', scale: [[13,13,13],[160,80,30],[235,125,55]] },
+  // Věková struktura
+  vek0_14:  { label: 'Věk 0–14',  unit: '%', desc: '', scale: [[13,20,35],[45,115,195],[95,175,255]] },
+  vek15_64: { label: 'Věk 15–64', unit: '%', desc: '', scale: [[18,18,35],[60,75,170],[110,125,240]] },
+  vek65:    { label: 'Věk 65+',   unit: '%', desc: '', scale: [[13,13,18],[120,50,50],[242,117,117]] },
+  // Zaměstnanost
+  zamestnanci: { label: 'Zaměstnanci',        unit: '%', desc: '', scale: [[13,20,30],[35,100,170],[70,160,240]] },
+  podnikatele: { label: 'Podnikatelé / OSVČ', unit: '%', desc: '', scale: [[13,13,13],[140,110,20],[242,195,0]] },
+  nezamest:    { label: 'Nezaměstnanost',     unit: '%', desc: '', scale: [[13,13,13],[150,75,20],[242,155,75]] },
+  // Sociální
+  verici: { label: 'Věřící',     unit: '%', desc: '', scale: [[13,13,18],[55,55,130],[110,95,215]] },
+  romove: { label: 'Romové',     unit: '%', desc: '', scale: [[13,13,13],[110,30,30],[215,55,55]] },
+  muzi:   { label: 'Podíl mužů', unit: '%', desc: '', scale: [[20,20,50],[70,70,165],[100,149,237]] },
 };
 
 const TILES = {
@@ -46,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDraw();
   bindAll();
   readURL();
+  updateIndicatorDesc();
   boot();
 });
 
@@ -59,7 +76,7 @@ async function boot() {
       if (u) { selectUnit(u.id, u.name); fetchStats(S.level, S.unitId, u.name); }
     }
   } catch (e) {
-    showErr('Nelze se připojit k API serveru. Zkontrolujte připojení.');
+    showErr('Nelze se připojit k API serveru. Zkontrolujte připojení nebo aktualizujte API URL v app.js.', true);
     console.error(e);
   } finally {
     hideOverlay();
@@ -246,8 +263,20 @@ function selectUnit(id, name) {
   S.unitName = name;
   document.getElementById('search-input').value = name || '';
   document.getElementById('analyze-btn').disabled = false;
+  document.getElementById('search-clear').classList.add('show');
   document.querySelectorAll('.drop-item').forEach(el => el.classList.toggle('active', String(el.dataset.id) === String(id)));
   closeDrop();
+  updateURL();
+}
+
+function clearSelection() {
+  S.unitId = null; S.unitName = null;
+  document.getElementById('search-input').value = '';
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('search-clear').classList.remove('show');
+  hideResults();
+  const ob = document.getElementById('onboard-state');
+  if (ob) ob.style.display = '';
   updateURL();
 }
 
@@ -269,6 +298,20 @@ async function analyze() {
 }
 
 async function analyzePolygon(geometry) {
+  // Reject polygons too small to intersect meaningful number of municipalities
+  if (geometry.type === 'Polygon') {
+    const coords = geometry.coordinates[0];
+    let area = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+      area += Math.abs(coords[i][0] * coords[i+1][1] - coords[i+1][0] * coords[i][1]);
+    }
+    area /= 2;
+    if (area < 0.0005) { // ~3–4 km² at Czech latitudes
+      showErr('Polygon je příliš malý. Nakreslete větší oblast na mapě.');
+      S.drawnItems.clearLayers();
+      return;
+    }
+  }
   setBtnLoad(true);
   hideResults();
   hideErr();
@@ -325,7 +368,7 @@ let activeTooltip = null;
 function onHover(e) {
   const p = e.target.feature.properties;
   const v = p[S.indicator];
-  const name = p.nazev ?? p.name ?? '—';
+  const name = p.nazev_obce ?? p.nazev ?? p.name ?? '—';
   if (activeTooltip) { S.map.removeLayer(activeTooltip); }
   activeTooltip = L.tooltip({ permanent: false, className: 'map-tt', direction: 'top', offset: [0, -5] })
     .setContent(`<span class="tt-name">${name}</span><span class="tt-val">${IND[S.indicator]?.label}: ${v != null ? fmtPct(v) : '—'}</span>`)
@@ -359,6 +402,11 @@ async function onClickFeature(e) {
 
 // ─── RENDER STATS ─────────────────────────────────────────────────────────────
 function renderStats(s, name, level) {
+  if (level === 'polygon' && (s.pocet_obci == null || s.pocet_obci === 0)) {
+    showErr('Polygon neprotíná žádné obce. Nakreslete větší oblast.');
+    S.drawnItems.clearLayers();
+    return;
+  }
   // Header
   set('res-pct',   s.pirati_pct != null ? `${s.pirati_pct.toFixed(1)} %` : '—');
   set('res-name',  name ?? '—');
@@ -403,8 +451,7 @@ function renderStats(s, name, level) {
   drawEdu(s);
 
   showResults();
-  // Mobile: open panel
-  document.getElementById('panel').classList.add('open');
+  openPanel();
 }
 
 // ─── CHARTS ───────────────────────────────────────────────────────────────────
@@ -524,15 +571,27 @@ function barWidth(id, val, max) {
   document.getElementById(id).style.width = `${Math.min(100, Math.max(0, (val / max) * 100))}%`;
 }
 
-function showResults()  { document.getElementById('results-sec').classList.add('show'); }
-function hideResults()  { document.getElementById('results-sec').classList.remove('show'); }
-
-function showErr(msg) {
-  const el = document.getElementById('error-box');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 6000);
+function showResults() {
+  document.getElementById('results-sec').classList.add('show');
+  const ob = document.getElementById('onboard-state');
+  if (ob) ob.style.display = 'none';
 }
-function hideErr() { document.getElementById('error-box').classList.remove('show'); }
+function hideResults() { document.getElementById('results-sec').classList.remove('show'); }
+
+let _errTimer = null;
+function showErr(msg, persistent = false) {
+  const el = document.getElementById('error-box');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (_errTimer) { clearTimeout(_errTimer); _errTimer = null; }
+  if (!persistent) {
+    _errTimer = setTimeout(() => el.classList.remove('show'), 7000);
+  }
+}
+function hideErr() {
+  if (_errTimer) { clearTimeout(_errTimer); _errTimer = null; }
+  document.getElementById('error-box').classList.remove('show');
+}
 
 function showMapHint(on) {
   document.getElementById('map-hint').classList.toggle('show', on);
@@ -552,6 +611,13 @@ function setBtnLoad(on) {
     : '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="6.5" y1="3.5" x2="6.5" y2="6.5"/><line x1="6.5" y1="6.5" x2="8.8" y2="8.8"/></svg>Analyzovat';
 }
 
+function setLevelLoading(on) {
+  document.querySelectorAll('#level-pills .pill').forEach(b => {
+    b.disabled = on;
+    b.style.opacity = on ? '0.45' : '';
+  });
+}
+
 function setLevel(level) {
   S.level = level;
   setLevelUI(level);
@@ -562,6 +628,13 @@ function setLevelUI(level) {
   document.querySelectorAll('#level-pills .pill').forEach(b => b.classList.toggle('active', b.dataset.level === level));
 }
 
+// ─── INDICATOR DESC ───────────────────────────────────────────────────────────
+function updateIndicatorDesc() {
+  const el = document.getElementById('indicator-desc');
+  if (!el) return;
+  el.textContent = IND[S.indicator]?.desc ?? '';
+}
+
 // ─── FETCH WITH ABORT ─────────────────────────────────────────────────────────
 async function apiFetch(url, opts = {}) {
   if (S.abort) S.abort.abort();
@@ -569,6 +642,31 @@ async function apiFetch(url, opts = {}) {
   const res = await fetch(url, { ...opts, signal: S.abort.signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res;
+}
+
+// ─── MOBILE PANEL HELPERS ─────────────────────────────────────────────────────
+function openPanel() {
+  const panel = document.getElementById('panel');
+  const backdrop = document.getElementById('panel-backdrop');
+  const btn = document.getElementById('menu-btn');
+  panel.classList.add('open');
+  btn?.classList.add('open');
+  if (backdrop) {
+    backdrop.classList.add('show');
+    requestAnimationFrame(() => backdrop.classList.add('visible'));
+  }
+}
+
+function closePanel() {
+  const panel = document.getElementById('panel');
+  const backdrop = document.getElementById('panel-backdrop');
+  const btn = document.getElementById('menu-btn');
+  panel.classList.remove('open');
+  btn?.classList.remove('open');
+  if (backdrop) {
+    backdrop.classList.remove('visible');
+    backdrop.addEventListener('transitionend', () => backdrop.classList.remove('show'), { once: true });
+  }
 }
 
 // ─── EVENT BINDINGS ───────────────────────────────────────────────────────────
@@ -582,9 +680,16 @@ function bindAll() {
       S.unitId = null; S.unitName = null;
       document.getElementById('search-input').value = '';
       document.getElementById('analyze-btn').disabled = true;
+      document.getElementById('search-clear').classList.remove('show');
       hideResults();
-      if (lv !== 'obce') { try { await loadGeoJSON(lv); } catch(e) { showErr('Nepodařilo se načíst hranice.'); } }
-      else { if (S.adminL) { S.map.removeLayer(S.adminL); S.adminL = null; } }
+      hideErr();
+      const ob = document.getElementById('onboard-state');
+      if (ob) ob.style.display = '';
+      if (lv !== 'obce') {
+        setLevelLoading(true);
+        try { await loadGeoJSON(lv); } catch(e) { showErr('Nepodařilo se načíst hranice.'); }
+        setLevelLoading(false);
+      } else { if (S.adminL) { S.map.removeLayer(S.adminL); S.adminL = null; } }
       await loadUnits(lv);
       updateURL();
     });
@@ -594,10 +699,14 @@ function bindAll() {
   document.querySelectorAll('#map-switcher .pill').forEach(btn =>
     btn.addEventListener('click', () => switchTile(btn.dataset.layer)));
 
+  // Search clear
+  document.getElementById('search-clear').addEventListener('click', clearSelection);
+
   // Indicator select
   document.getElementById('indicator-sel').addEventListener('change', e => {
     S.indicator = e.target.value;
     updateChoropleth();
+    updateIndicatorDesc();
     updateURL();
   });
 
@@ -635,7 +744,16 @@ function bindAll() {
   // Draw button
   document.getElementById('draw-btn').addEventListener('click', startDraw);
 
-  // Mobile panel handle
-  document.getElementById('panel-handle').addEventListener('click', () =>
-    document.getElementById('panel').classList.toggle('open'));
+  // Hamburger button (mobile)
+  document.getElementById('menu-btn')?.addEventListener('click', () => {
+    document.getElementById('panel').classList.contains('open') ? closePanel() : openPanel();
+  });
+
+  // Backdrop tap — closes panel
+  document.getElementById('panel-backdrop')?.addEventListener('click', closePanel);
+
+  // Mobile panel handle (kept but noop — handle is hidden on mobile side panel)
+  document.getElementById('panel-handle')?.addEventListener('click', () => {
+    document.getElementById('panel').classList.contains('open') ? closePanel() : openPanel();
+  });
 }
